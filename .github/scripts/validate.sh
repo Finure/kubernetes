@@ -10,6 +10,18 @@ if [ -z "$CHANGED_FILES" ]; then
   exit 0
 fi
 
+echo "Adding helm repos"
+
+if [ -f clusters/finure/common/helm-repositories.yaml ]; then
+  yq e -o=j -I=0 '.[] | select(.kind == "HelmRepository") | [.metadata.name, .spec.url] | @tsv' \
+    clusters/finure/common/helm-repositories.yaml | while IFS=$'\t' read -r name url; do
+      helm repo add "$name" "$url" || true
+  done
+  helm repo update
+else
+  echo "No helm reps found, skipping"
+fi
+
 for file in $CHANGED_FILES; do
   if [ ! -f "$file" ]; then 
     echo "Skipped deleted file: $file" # Skip deleted files

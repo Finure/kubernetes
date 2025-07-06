@@ -28,7 +28,7 @@ jobs:
           pip install yq
 
       - name: chmod validation script
-        run: chmod +x scripts/validate.sh
+        run: chmod +x .github/scripts/validate.sh
 
       - name: Validate changed manifests
         run: .github/scripts/validate.sh

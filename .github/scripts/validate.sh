@@ -12,9 +12,12 @@ fi
 
 echo "Adding helm repos"
 yq eval 'select(.kind == "HelmRepository") | .metadata.name + " " + .spec.url' \
-  clusters/finure/common/helm-repositories.yaml | sort -u | while read -r name url; do
-  helm repo add "$name" "$url"
-done
+  clusters/finure/common/helm-repositories.yaml | \
+  sort -u | \
+  grep -vE '^---$' | \
+  while read -r name url; do
+    helm repo add "$name" "$url"
+  done
 
 helm repo update
 

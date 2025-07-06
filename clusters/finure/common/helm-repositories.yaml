@@ -2,7 +2,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: cilium
+  name: cilium-test
   namespace: kube-system
 spec:
   interval: 30m

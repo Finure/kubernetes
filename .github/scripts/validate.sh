@@ -44,5 +44,3 @@ for file in $CHANGED_FILES; do
     fi
   fi
 done
-
-  

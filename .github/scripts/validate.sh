@@ -31,7 +31,9 @@ for file in $CHANGED_FILES; do
     echo "Detected HelmRelease"
 
     name=$(yq e '.metadata.name' "$file")
-    chart=$(yq e '.spec.chart.spec.chart' "$file")
+    chart_name=$(yq e '.spec.chart.spec.chart' "$file")
+    repo_name=$(yq e '.spec.chart.spec.sourceRef.name' "$file")
+    chart="$repo_name/$chart_name"
     version=$(yq e '.spec.chart.spec.version' "$file")
     namespace=$(yq e '.spec.targetNamespace // "default"' "$file")
     values_file="$(dirname "$file")/values.yaml"

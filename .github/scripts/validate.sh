@@ -11,16 +11,14 @@ if [ -z "$CHANGED_FILES" ]; then
 fi
 
 echo "Adding helm repos"
+yq eval-all '
+  select(.kind == "HelmRepository") |
+  .metadata.name + " " + .spec.url
+' clusters/finure/common/helm-repositories.yaml | while read -r name url; do
+  helm repo add "$name" "$url"
+done
 
-if [ -f clusters/finure/common/helm-repositories.yaml ]; then
-  yq e -o=j -I=0 '.[] | select(.kind == "HelmRepository") | [.metadata.name, .spec.url] | @tsv' \
-    clusters/finure/common/helm-repositories.yaml | while IFS=$'\t' read -r name url; do
-      helm repo add "$name" "$url" || true
-  done
-  helm repo update
-else
-  echo "No helm reps found, skipping"
-fi
+helm repo update
 
 for file in $CHANGED_FILES; do
   if [ ! -f "$file" ]; then 

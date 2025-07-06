@@ -36,14 +36,18 @@ for file in $CHANGED_FILES; do
     chart="$repo_name/$chart_name"
     version=$(yq e '.spec.chart.spec.version' "$file")
     namespace=$(yq e '.spec.targetNamespace // "default"' "$file")
-    values_file="$(dirname "$file")/values.yaml"
+    if [ "$(yq e '.spec.values // {}' "$file")" != "{}" ]; then
+        yq e '.spec.values' "$file" > /tmp/values.yaml
 
-    if ! helm template "$name" "$chart" \
-      --version "$version" \
-      --namespace "$namespace" \
-      ${values_file:+--values "$values_file"} > /tmp/rendered.yaml; then
-      echo "helm template failed for $file"
-      exit 1
+        helm template "$name" "$chart" \
+        --version "$version" \
+        --namespace "$namespace" \
+        --values /tmp/values.yaml > /tmp/rendered.yaml
+
+    else
+        helm template "$name" "$chart" \
+        --version "$version" \
+        --namespace "$namespace" > /tmp/rendered.yaml
     fi
 
     kubeconform -strict -ignore-missing-schemas -summary -output text /tmp/rendered.yaml

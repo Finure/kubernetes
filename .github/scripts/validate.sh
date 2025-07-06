@@ -4,6 +4,7 @@ set -euo pipefail
 
 echo "Getting changes"
 CHANGED_FILES=$(git diff --name-only origin/main...HEAD -- '*.yaml' '*.yml')
+echo $CHANGED_FILES
 
 if [ -z "$CHANGED_FILES" ]; then
   echo "No changes"

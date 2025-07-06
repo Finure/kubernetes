@@ -4,15 +4,27 @@ set -euo pipefail
 
 echo "Getting changes"
 CHANGED_FILES=$(git diff --name-only origin/main...HEAD -- '*.yaml' '*.yml')
+echo $CHANGED_FILES
 
 if [ -z "$CHANGED_FILES" ]; then
   echo "No changes"
   exit 0
 fi
 
+echo "Adding helm repos"
+yq eval 'select(.kind == "HelmRepository") | .metadata.name + " " + .spec.url' \
+  clusters/finure/common/helm-repositories.yaml | \
+  sort -u | \
+  grep -vE '^---$' | \
+  while read -r name url; do
+    helm repo add "$name" "$url"
+  done
+
+helm repo update
+
 for file in $CHANGED_FILES; do
-  if [ ! -f "$file" ]; then
-    echo "Skipped deleted file: $file"  # Skip deleted files
+  if [ ! -f "$file" ]; then 
+    echo "Skipped deleted file: $file" # Skip deleted files
     continue
   fi
 
@@ -20,24 +32,33 @@ for file in $CHANGED_FILES; do
     echo "Detected HelmRelease"
 
     name=$(yq e '.metadata.name' "$file")
-    chart=$(yq e '.spec.chart.spec.chart' "$file")
+    chart_name=$(yq e '.spec.chart.spec.chart' "$file")
+    repo_name=$(yq e '.spec.chart.spec.sourceRef.name' "$file")
+    chart="$repo_name/$chart_name"
     version=$(yq e '.spec.chart.spec.version' "$file")
-    repo=$(yq e '.spec.chart.spec.sourceRef.name' "$file")
     namespace=$(yq e '.spec.targetNamespace // "default"' "$file")
-    values_file="$(dirname "$file")/values.yaml"
+    if [ "$(yq e '.spec.values // {}' "$file")" != "{}" ]; then
+        yq e '.spec.values' "$file" > /tmp/values.yaml
 
-    if ! helm template "$release_name" "$chart" \
-      --version "$version" \
-      --namespace "$namespace" \
-      ${values_file:+--values "$values_file"} > /tmp/rendered.yaml; then
-      echo "helm template failed $file"
-      exit 1
+        helm template "$name" "$chart" \
+        --version "$version" \
+        --namespace "$namespace" \
+        --values /tmp/values.yaml > /tmp/rendered.yaml
+
+    else
+        helm template "$name" "$chart" \
+        --version "$version" \
+        --namespace "$namespace" > /tmp/rendered.yaml
     fi
 
     kubeconform -strict -ignore-missing-schemas -summary -output text /tmp/rendered.yaml
 
   else
-    echo "Checking raw k8 YAMLs"
-    kubeconform -strict -ignore-missing-schemas -summary -output text "$file"
+    echo "Checking k8 YAMLs"
+    if grep -q 'apiVersion:' "$file" && grep -q 'kind:' "$file"; then
+      kubeconform -strict -ignore-missing-schemas -summary -output text "$file"
+    else
+      echo "Skipping non-Kubernetes YAML: $file"
+    fi
   fi
 done

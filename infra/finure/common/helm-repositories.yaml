@@ -17,11 +17,11 @@ spec:
   interval: 1h0m0s
   url: https://helm.cilium.io
 ---
-apiVersion: source.toolkit.fluxcd.io/v1
+apiVersion: source.toolkit.fluxcd.io/v1beta1
 kind: HelmRepository
 metadata:
-  name: elastic
-  namespace: logging
+  name: external-secrets
+  namespace: kube-system
 spec:
   interval: 1h0m0s
-  url: https://helm.elastic.co
+  url: https://external-secrets.github.io/kubernetes-external-secrets

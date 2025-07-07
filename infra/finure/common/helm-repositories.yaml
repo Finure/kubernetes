@@ -16,3 +16,12 @@ metadata:
 spec:
   interval: 1h0m0s
   url: https://helm.cilium.io
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: elastic
+  namespace: logging
+spec:
+  interval: 1h0m0s
+  url: https://helm.elastic.io

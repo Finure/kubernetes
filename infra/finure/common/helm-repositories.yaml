@@ -24,4 +24,4 @@ metadata:
   namespace: logging
 spec:
   interval: 1h0m0s
-  url: https://helm.elastic.io
+  url: https://helm.elastic.co

@@ -16,7 +16,6 @@ spec:
   values:
     deploymentMode: SingleBinary
     singleBinary:
-      replicas: 1
       persistence:
         enabled: true
         storageClass: standard-rwo

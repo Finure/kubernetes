@@ -25,3 +25,21 @@ metadata:
 spec:
   interval: 1h0m0s
   url: https://external-secrets.github.io/kubernetes-external-secrets
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: HelmRepository
+metadata:
+  name: loki
+  namespace: logging
+spec:
+  interval: 1h0m0s
+  url: https://grafana.github.io/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: HelmRepository
+metadata:
+  name: fluent-bit
+  namespace: logging
+spec:
+  interval: 1h0m0s
+  url: https://fluent.github.io/helm-charts

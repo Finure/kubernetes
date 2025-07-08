@@ -1,0 +1,40 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: logging
+spec:
+  chart:
+    spec:
+      chart: loki
+      version: 6.30.1
+      sourceRef:
+        kind: HelmRepository
+        name: loki
+        namespace: logging
+  interval: 1h0m0s
+  values:
+    loki:
+      commonConfig:
+        replication_factor: 1
+      storage:
+        type: gcs
+      object_store:
+        type: gcs
+        gcs:
+          bucket_name: "finure-loki"
+      schemaConfig:
+        configs:
+          - from: 2025-04-01
+            store: tsdb
+            object_store: gcs
+            schema: v13
+            index:
+              prefix: index_
+              period: 24h
+      structuredConfig:
+        analytics:
+          reporting_enabled: false
+        auth_enabled: false
+        server:
+          log_level: info

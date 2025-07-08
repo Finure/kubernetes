@@ -18,7 +18,7 @@ spec:
       commonConfig:
         replication_factor: 1
       storage:
-        type: gcs
+        type: filesystem
         object_store:
           type: gcs
           gcs:

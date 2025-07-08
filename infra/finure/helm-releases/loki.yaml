@@ -14,8 +14,8 @@ spec:
         namespace: logging
   interval: 1h0m0s
   values:
+    deploymentMode: SingleBinary
     loki:
-      deploymentMode: SingleBinary
       commonConfig:
         replication_factor: 1
       storage:

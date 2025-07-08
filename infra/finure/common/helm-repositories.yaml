@@ -17,16 +17,16 @@ spec:
   interval: 1h0m0s
   url: https://helm.cilium.io
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta1
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: external-secrets
   namespace: external-secrets
 spec:
   interval: 1h0m0s
-  url: https://external-secrets.github.io/kubernetes-external-secrets
+  url: https://charts.external-secrets.io
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta1
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: loki
@@ -35,7 +35,7 @@ spec:
   interval: 1h0m0s
   url: https://grafana.github.io/helm-charts
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta1
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: fluent-bit

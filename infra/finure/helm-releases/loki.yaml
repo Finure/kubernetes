@@ -15,6 +15,12 @@ spec:
   interval: 1h0m0s
   values:
     deploymentMode: SingleBinary
+    singleBinary:
+      replicas: 1
+      persistence:
+        enabled: true
+        storageClass: standard-rwo
+        size: 10Gi
     loki:
       commonConfig:
         replication_factor: 1

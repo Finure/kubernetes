@@ -19,10 +19,10 @@ spec:
         replication_factor: 1
       storage:
         type: gcs
-      object_store:
-        type: gcs
-        gcs:
-          bucket_name: "finure-loki"
+        object_store:
+          type: gcs
+          gcs:
+            bucket_name: "finure-loki"
       schemaConfig:
         configs:
           - from: 2025-04-01
@@ -32,9 +32,3 @@ spec:
             index:
               prefix: index_
               period: 24h
-      structuredConfig:
-        analytics:
-          reporting_enabled: false
-        auth_enabled: false
-        server:
-          log_level: info

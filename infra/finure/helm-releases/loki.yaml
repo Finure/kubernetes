@@ -22,7 +22,7 @@ spec:
         object_store:
           type: gcs
           gcs:
-            bucket_name: "finure-loki"
+            bucket_name: finure-loki
       schemaConfig:
         configs:
           - from: 2025-04-01

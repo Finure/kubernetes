@@ -16,6 +16,7 @@ spec:
   values:
     deploymentMode: SingleBinary
     singleBinary:
+      replicas: 1
       persistence:
         enabled: true
         storageClass: standard-rwo
@@ -31,10 +32,34 @@ spec:
             bucket_name: finure-loki
       schemaConfig:
         configs:
-          - from: 2025-04-01
+          - from: 202r-04-01
             store: tsdb
             object_store: gcs
             schema: v13
             index:
               prefix: index_
               period: 24h
+    backend:
+      replicas: 0
+    read:
+      replicas: 0
+    write:
+      replicas: 0
+    ingester:
+      replicas: 0
+    querier:
+      replicas: 0
+    queryFrontend:
+      replicas: 0
+    queryScheduler:
+      replicas: 0
+    distributor:
+      replicas: 0
+    compactor:
+      replicas: 0
+    indexGateway:
+      replicas: 0
+    bloomCompactor:
+      replicas: 0
+    bloomGateway:
+      replicas: 0

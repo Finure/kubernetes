@@ -11,15 +11,6 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: cilium
-  namespace: kube-system
-spec:
-  interval: 1h0m0s
-  url: https://helm.cilium.io
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
   name: external-secrets
   namespace: external-secrets
 spec:

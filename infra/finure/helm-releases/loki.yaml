@@ -47,6 +47,8 @@ spec:
       enabled: false
     memcached:
       enabled: false
+    memcachedExporter:
+      enabled: false
     backend:
       replicas: 0
     read:

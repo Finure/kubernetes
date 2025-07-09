@@ -45,6 +45,8 @@ spec:
       storage_config:
         gcs:
           bucket_name: finure-loki
+    gateway:
+      enabled: false
     chunksCache:
       enabled: false
     memcached:

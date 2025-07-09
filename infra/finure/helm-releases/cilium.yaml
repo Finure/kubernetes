@@ -13,9 +13,11 @@ spec:
         kind: HelmRepository
         name: cilium
         namespace: kube-system
-      version: 1.17.5
+      version: 1.17.4
   interval: 30m
   values:
+    scheduling:
+      mode: kube-scheduler
     operator:
       dashboards:
         enabled: true

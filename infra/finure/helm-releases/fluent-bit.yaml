@@ -54,5 +54,5 @@ spec:
             Match kube.*
             Host loki.logging.svc.cluster.local
             Port 3100
-            Labels job=fluentbit, namespace=${namespace}, pod=${pod_name}, service=${service_name}
+            Labels agent=fluent-bit, namespace=$kubernetes['namespace_name'], pod=$kubernetes['pod_name'], container=$kubernetes['container_name']
             Auto_Kubernetes_Labels On

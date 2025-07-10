@@ -12,7 +12,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: fluent-bit
-        namespace: logging
+        namespace: logging1
   values:
     config:
       inputs: |

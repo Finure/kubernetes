@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: log-generator
+  namespace: default
+  labels:
+    app: log-generator
+spec:
+  containers:
+  - name: logger
+    image: busybox
+    command: ["/bin/sh", "-c"]
+    args:
+      - |
+        while true; do
+          echo "$(date) - This is a test log message from log-generator pod";
+          sleep 2;
+        done
+    resources:
+      limits:
+        memory: "64Mi"
+        cpu: "100m"
+    imagePullPolicy: IfNotPresent
+  restartPolicy: Always
+

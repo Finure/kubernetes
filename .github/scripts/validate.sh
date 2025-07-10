@@ -30,7 +30,9 @@ for file in $CHANGED_FILES; do
 
   if grep -q 'kind: HelmRelease' "$file"; then
     echo "Detected HelmRelease"
+    chart="$repo_name/$chart_name"
 
+    echo "Rendering chart: $chart (version: $version) in namespace: $namespace"
     name=$(yq e '.metadata.name' "$file")
     chart_name=$(yq e '.spec.chart.spec.chart' "$file")
     repo_name=$(yq e '.spec.chart.spec.sourceRef.name' "$file")

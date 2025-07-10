@@ -38,7 +38,6 @@ for file in $CHANGED_FILES; do
     version=$(yq e '.spec.chart.spec.version' "$file")
     namespace=$(yq e '.spec.targetNamespace // "default"' "$file")
 
-    echo "Rendering chart: $chart (version: $version) in name: $name namespace: $namespace"
     if [ "$(yq e '.spec.values // {}' "$file")" != "{}" ]; then
         yq e '.spec.values' "$file" > /tmp/values.yaml
 

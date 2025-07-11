@@ -2,7 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: fluent-bit
-  namespace: logging
+  namespace: monitoring
 spec:
   interval: 1m
   chart:
@@ -12,7 +12,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: fluent-bit
-        namespace: logging
+        namespace: monitoring
   values:
     config:
       inputs: |
@@ -40,7 +40,7 @@ spec:
         [OUTPUT]
             Name loki
             Match kube.*
-            Host loki.logging.svc.cluster.local
+            Host loki.monitoring.svc.cluster.local
             Port 3100
             Labels agent=fluent-bit, namespace=$kubernetes['namespace_name'], pod=$kubernetes['pod_name'], container=$kubernetes['container_name']
             Auto_Kubernetes_Labels On

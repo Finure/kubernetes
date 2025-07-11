@@ -21,7 +21,7 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: loki
-  namespace: logging
+  namespace: monitoring
 spec:
   interval: 1h0m0s
   url: https://grafana.github.io/helm-charts
@@ -30,7 +30,16 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: fluent-bit
-  namespace: logging
+  namespace: monitoring
 spec:
   interval: 1h0m0s
   url: https://fluent.github.io/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: istio
+  namespace: istio-system
+spec:
+  interval: 1h0m0s
+  url: https://istio-release.storage.googleapis.com/charts

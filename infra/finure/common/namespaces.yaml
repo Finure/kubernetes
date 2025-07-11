@@ -7,9 +7,9 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: logging
+  name: external-secrets
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: external-secrets
+  name: istio-system

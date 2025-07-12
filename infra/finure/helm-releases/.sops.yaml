@@ -1,0 +1,7 @@
+creation_rules:
+  - path_regex: .*.yaml
+    encrypted_regex: (^.*config$)
+    gcp_kms: projects/finure-465001/locations/global/keyRings/gcp-finure/cryptoKeys/sops-key
+  - path_regex: .*.yaml
+    encrypted_regex: ^.*values$
+    gcp_kms: projects/finure-465001/locations/global/keyRings/gcp-finure/cryptoKeys/sops-key

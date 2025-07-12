@@ -11,3 +11,5 @@ spec:
   path: ./infra/finure
   prune: true
   validation: client
+  decryption:
+    provider: sops

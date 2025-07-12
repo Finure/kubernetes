@@ -14,6 +14,7 @@ spec:
     hosts:
     - "prometheus.clokesh.me"
     - "alertmanager.clokesh.me"
+    - "grafana.clokesh.me"
 ---
 apiVersion: networking.istio.io/v1
 kind: Gateway

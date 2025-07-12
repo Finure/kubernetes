@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         cluster_path:
-          - clusters/finure
+          - infra/finure
         resource:
           - helmrelease
           - kustomization

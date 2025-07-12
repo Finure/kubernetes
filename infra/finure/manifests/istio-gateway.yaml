@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: monitoring-gateway
+  namespace: monitoring
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "prometheus.clokesh.me"
+    - "alertmanager.clokesh.me"
+---
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: vault-gateway
+  namespace: vault
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "vault.clokesh.me"

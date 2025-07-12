@@ -62,3 +62,6 @@ spec:
                 name: istio
                 namespace: istio-system
     interval: 1h0m0s
+    values:
+      service:
+        annotations: external-dns.alpha.kubernetes.io/hostname="prometheus.clokesh.me,alertmanager.clokesh.me,vault.clokesh.me"

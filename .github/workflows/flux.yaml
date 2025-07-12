@@ -40,9 +40,8 @@ jobs:
       with:
         live-branch: main
         path: clusters
-        resource: 
-          - helmrelease
-          - kustomization
+        resource: kustomization
+        resource: helmrelease
 
     - name: PR Comment with diff
       if: steps.diff.outputs.diff != ''

@@ -23,8 +23,8 @@ jobs:
         resource:
           - helmrelease
           - kustomization
-      exclude:
-        - cluster_path: infra/finure/helm-releases/.sops.yaml
+        exclude:
+          - cluster_path: infra/finure/helm-releases/.sops.yaml
     steps:
     - name: Print matrix path and resource
       run: echo "Running on path ${{ matrix.cluster_path }}"

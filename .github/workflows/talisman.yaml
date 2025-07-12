@@ -21,8 +21,9 @@ jobs:
 
       - name: Install Talisman
         run: |
-          go install github.com/thoughtworks/talisman/cmd/talisman@v1.37.0
-          echo "$HOME/go/bin" >> $GITHUB_PATH
+          curl -sL https://github.com/thoughtworks/talisman/releases/latest/download/talisman-linux-amd64 -o talisman
+          chmod +x talisman
+          sudo mv talisman /usr/local/bin/
 
       - name: Run Talisman scan
         run: talisman --scan

@@ -1,0 +1,47 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: vault
+    namespace: vault
+spec:
+    chart:
+        spec:
+            chart: vault
+            version: 0.30.0
+            sourceRef:
+                kind: HelmRepository
+                name: hashicorp
+                namespace: vault
+    interval: 1h0m0s
+    values:
+        injector:
+            enabled: false
+        server:
+            enabled: true
+            logLevel: info
+            logFormat: json
+            dataStorage:
+                enabled: false
+            standalone:
+                enabled: false
+            ha:
+                enabled: true
+                replicas: 3
+                config: ENC[AES256_GCM,data:k6u4aHJRNtIiQl/ftf1HOLL66iGSFCrs04lN5t2bqUI5ezZdRRSLuoHJXku633PA1aX+cQIEkhzv/fALmBvMVATc7DBXMh026XeE/29ltyUDi5d8iy+8gUlu9ck6kLfTW326xvaBf1MWosLFfSFN6zb0ZEyHhKcUk2VUt5rVl5A7BKrx7G9gy6mgHeaR1FEEiJBLQ4LoRaKb84EbPr6UUm55KU6ou7yNdK1or9J210AnzAm+Xw6Q0zJ7WBgsweyBcLv0J2gyJl6BHBWDz+JyEml9HJD8ZtvGjxryFTfAGQARsjzpdAponpcGv0aMPMblUd/qdNEOtWsN3eODg9gaaQZDVVWOg0JUrokcxUGHCDNpKVnedVgX756QXs+95jpqxVxOHN+32xwZGgQOzNeHhuUGlLsBHn2mSRPU9Q9ji0AlmMlp2m+6kZUJRhog1HOI7rsmZ0s1gP2TLoXjgV/hOv1d0vkWb+MklIeuP0qHKqOqraMIrefL,iv:pFQhO59NmMAyfUDrKl8BZ3sqZbUj8w6F7pQhxrR4Zj4=,tag:ODO/rSQRakDapt2q6ah8Wg==,type:str]
+            serviceAccount:
+                name: vault
+                annotations:
+                    iam.gke.io/gcp-service-account: vault-sa@finure-465001.iam.gserviceaccount.com
+        ui:
+            enabled: true
+            externalPort: 8200
+            serviceType: ClusterIP
+sops:
+    gcp_kms:
+        - resource_id: projects/finure-465001/locations/global/keyRings/gcp-finure/cryptoKeys/sops-key
+          created_at: "2025-07-12T00:43:21Z"
+          enc: CiQA2FBvQyjLvDHXbwUn+MJHiu7mECQf+5ZOYo/qWMtZ9GthisUSSQD6dMGYeSPt8x7Wn3rl2+namuch3exfEP2M+W9Q5WlvPU0C/WhAzXeNnzDqH/d3icBYfFcx8IYXcptQwSDTYRuVmmX+5/diUAo=
+    lastmodified: "2025-07-12T00:43:22Z"
+    mac: ENC[AES256_GCM,data:JWzQRUdYgYGuB2WcbVPlUXuKYnpThF1z3vnVe4ThLYTS0Ltr5VVZfjOviPl8aOCfOaLTbaZGAiS98smH9W+4L4pOhk7jMy/QlYzjn/+J3asDYrVj8rM5bLaXjz3xjq3K1xhBoog5xdQb+0nAkJUhhi5T4Ww8Fpboy2Yjjmr1QuU=,iv:bi+k2FAGNbpS3m7nPNO9tnHUL9IjKWfpcillR7wWB/4=,tag:u3do5HzP96NJn1HnvM6jCw==,type:str]
+    encrypted_regex: (^.*config$)
+    version: 3.10.2

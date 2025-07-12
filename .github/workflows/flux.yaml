@@ -53,11 +53,18 @@ jobs:
         path: ${{ matrix.cluster_path }}
         resource: ${{ matrix.resource }}
 
+    - name: Generate Token
+      uses: actions/create-github-app-token@v2
+      id: app-token
+      with:
+        app-id: ${{ secrets.FINURE_APP_ID }}
+        private-key: ${{ secrets.FINURE_APP_KEY }}
+
     - name: PR Comment with diff
       if: steps.diff.outputs.diff != ''
       uses: mshick/add-pr-comment@v2
       with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         message-id: flux-diff
         message-failure: Unable to post diff
         message: |

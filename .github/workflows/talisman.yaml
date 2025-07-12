@@ -27,7 +27,7 @@ jobs:
 
       - name: Run Talisman scan
         run: |
-          ./talisman --scan || echo "Talisman completed with findings"
+          talisman --scan || echo "Talisman completed with findings"
       
       - name: Print Talisman report
         run: |

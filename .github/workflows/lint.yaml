@@ -51,13 +51,13 @@ jobs:
           **/*.yml
 
     - name: Install yamllint
-      if: steps.changed-files.outputs.changed_files != '[]'
+      if: steps.changed-files.outputs.changed_files != ''
       shell: bash
       run: |
         pip install --user yamllint
 
     - name: Run yamllint
-      if: steps.changed-files.outputs.changed_files != '[]'
+      if: steps.changed-files.outputs.changed_files != ''
       shell: bash
       run: |
         yamllint --format github ${{ steps.changed-files.outputs.changed_files }}

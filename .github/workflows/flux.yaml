@@ -16,6 +16,13 @@ jobs:
   flux:
     name: flux-diff
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cluster_path:
+          - clusters/finure
+        resource:
+          - helmrelease
+          - kustomization
     steps:
     - name: Checkout
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -39,9 +46,8 @@ jobs:
       id: diff
       with:
         live-branch: main
-        path: clusters
-        resource: kustomization
-        resource: helmrelease
+        path: ${{ matrix.cluster_path }}
+        resource: ${{ matrix.resource }}
 
     - name: PR Comment with diff
       if: steps.diff.outputs.diff != ''

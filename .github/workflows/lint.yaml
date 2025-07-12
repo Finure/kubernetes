@@ -60,7 +60,7 @@ jobs:
       if: steps.changed-files.outputs.changed_files != '[]'
       shell: bash
       run: |
-        yamllint --config-file .yamllint.yaml --format github ${{ join(fromJSON(steps.changed-files.outputs.changed_files), ' ') }}
+        yamllint --config-file .yamllint.yaml --format github ${{ steps.changed-files.outputs.changed_files }}
 
   lint_success:
     needs:

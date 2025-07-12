@@ -21,7 +21,7 @@ jobs:
 
       - name: Install Talisman
         run: |
-          curl -sL https://github.com/thoughtworks/talisman/releases/latest/download/talisman-linux-amd64 -o talisman
+          curl -sL https://github.com/thoughtworks/talisman/releases/download/v1.37.0/talisman_darwin_amd64 -o talisman
           chmod +x talisman
           sudo mv talisman /usr/local/bin/
 

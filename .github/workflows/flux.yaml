@@ -64,7 +64,7 @@ jobs:
       if: steps.diff.outputs.diff != ''
       uses: mshick/add-pr-comment@v2
       with:
-        GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        repo-token: ${{ steps.app-token.outputs.token }}
         message-id: flux-diff
         message-failure: Unable to post diff
         message: |

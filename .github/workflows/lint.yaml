@@ -29,11 +29,15 @@ jobs:
           .github/workflows/*.yaml
           .github/workflows/*.yml
 
+    - name: Print changed files
+      run: |
+        echo "Changed files:"
+        echo "${{ steps.changed-files.outputs.all_changed_files }}"
+
     - name: Run actionlint
       if: steps.changed-files.outputs.changed_files != '[]'
       uses: reviewdog/action-actionlint@a5524e1c19e62881d79c1f1b9b6f09f16356e281 # v1.65.2
       with:
-        actionlint_config: .github/actionlint.yaml
         file_pattern: ${{ join(fromJSON(steps.changed-files.outputs.changed_files), ' ') }}
 
   yamllint:

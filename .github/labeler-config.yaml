@@ -1,0 +1,18 @@
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**/*"
+kubernetes:
+  - changed-files:
+      - any-glob-to-any-file: "infra/**/*"
+k8-common:
+  - changed-files:
+      - any-glob-to-any-file: "infra/**/common"
+helm-releases:
+  - changed-files:
+      - any-glob-to-any-file: "infra/**/helm-releases"
+k8-manifests:
+  - changed-files:
+      - any-glob-to-any-file: "infra/**/manifests"
+k8-external-secrets:
+  - changed-files:
+      - any-glob-to-any-file: "infra/**/secrets"

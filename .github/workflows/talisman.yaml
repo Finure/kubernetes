@@ -17,11 +17,11 @@ jobs:
       - name: Set up Go (Talisman requires Go)
         uses: actions/setup-go@v4
         with:
-          go-version: 1.21
+          go-version: 1.23
 
       - name: Install Talisman
         run: |
-          go install github.com/thoughtworks/talisman@latest
+          go install github.com/thoughtworks/talisman/cmd/talisman@v1.37.0
           echo "$HOME/go/bin" >> $GITHUB_PATH
 
       - name: Run Talisman scan

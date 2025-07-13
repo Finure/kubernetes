@@ -36,13 +36,13 @@ spec:
               resources:
                 requests:
                   storage: 5Gi
-      grafana:
-        additionalDataSources: 
-          - name: loki
-            access: proxy
-            basicAuth: false
-            editable: false
-            orgId: 1
-            type: loki
-            url: http://loki.monitoring.svc.cluster.local:3100
-            version: 1
+    grafana:
+      additionalDataSources: 
+        - name: loki
+          access: proxy
+          basicAuth: false
+          editable: false
+          orgId: 1
+          type: loki
+          url: http://loki.monitoring.svc.cluster.local:3100
+          version: 1

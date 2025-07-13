@@ -10,6 +10,5 @@ spec:
     name: flux-system
   path: ./infra/finure
   prune: true
-  validation: client
   decryption:
     provider: sops

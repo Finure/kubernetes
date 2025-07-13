@@ -1,18 +1,16 @@
 ci:
   - changed-files:
       - any-glob-to-any-file: ".github/**/*"
+flux:
+  - changed-files:
+      - any-glob-to-any-file: "clusters/**/*"
 kubernetes:
   - changed-files:
       - any-glob-to-any-file: "infra/**/*"
-k8-common:
+infra-app:
   - changed-files:
-      - any-glob-to-any-file: "infra/**/common"
-helm-releases:
+      - any-glob-to-any-file: 'infra/**/*'
+      - all-globs-to-all-files: '!infra/secrets/*'
+secrets:
   - changed-files:
-      - any-glob-to-any-file: "infra/**/helm-releases"
-k8-manifests:
-  - changed-files:
-      - any-glob-to-any-file: "infra/**/manifests"
-k8-external-secrets:
-  - changed-files:
-      - any-glob-to-any-file: "infra/**/secrets"
+      - any-glob-to-any-file: "infra/secrets/*"

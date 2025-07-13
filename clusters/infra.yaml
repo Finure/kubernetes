@@ -1,14 +1,41 @@
+---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infra
+  name: istio
   namespace: flux-system
 spec:
   interval: 1m
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/finure
+  path: ./infra/istio
+  prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: monitoring
+  namespace: flux-system
+spec:
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/monitoring
+  prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: vault
+  namespace: flux-system
+spec:
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/vault
   prune: true
   decryption:
     provider: sops
@@ -16,7 +43,20 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infra-secrets
+  name: external-secrets
+  namespace: flux-system
+spec:
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/external-secrets
+  prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: secrets
   namespace: flux-system
 spec:
   interval: 1m
@@ -25,8 +65,35 @@ spec:
     name: flux-system
   path: ./infra/secrets
   prune: true
-  decryption:
-    provider: sops
   dependsOn:
-    - name: infra
-      namespace: flux-system
+    - name: external-secrets
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-dns
+  namespace: flux-system
+spec:
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/external-dns
+  prune: true
+  dependsOn:
+    - name: secrets
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: istio-resources
+  namespace: flux-system
+spec:
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/istio-resources
+  prune: true
+  dependsOn:
+    - name: istio

@@ -129,7 +129,7 @@ spec:
   path: ./infra/external-dns
   prune: true
   dependsOn:
-    - name: secrets
+    - name: external-secrets-backend
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

@@ -2,9 +2,12 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: istio
+  name: &appname istio
   namespace: flux-system
 spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
   interval: 1m
   sourceRef:
     kind: GitRepository
@@ -15,9 +18,12 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: monitoring
+  name: &appname monitoring
   namespace: flux-system
 spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
   interval: 1m
   sourceRef:
     kind: GitRepository
@@ -28,9 +34,12 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: vault
+  name: &appname vault
   namespace: flux-system
 spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
   interval: 1m
   sourceRef:
     kind: GitRepository
@@ -43,22 +52,35 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: external-secrets
+  name: &appname external-secrets
   namespace: flux-system
 spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
   interval: 1m
   sourceRef:
     kind: GitRepository
     name: flux-system
   path: ./infra/external-secrets
   prune: true
+  dependsOn:
+    - name: vault
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: external-secrets
+      namespace: external-secrets
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: external-secrets-backend
+  name: &appname external-secrets-backend
   namespace: flux-system
 spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
   interval: 1m
   sourceRef:
     kind: GitRepository
@@ -71,9 +93,12 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: secrets
+  name: &appname secrets
   namespace: flux-system
 spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
   interval: 1m
   sourceRef:
     kind: GitRepository
@@ -82,13 +107,21 @@ spec:
   prune: true
   dependsOn:
     - name: external-secrets-backend
+  healthChecks:
+    - apiVersion: v1
+      kind: Secret
+      name: cloudflare
+      namespace: external-dns
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: external-dns
+  name: &appname external-dns
   namespace: flux-system
 spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
   interval: 1m
   sourceRef:
     kind: GitRepository
@@ -101,9 +134,12 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: istio-resources
+  name: &appname istio-resources
   namespace: flux-system
 spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
   interval: 1m
   sourceRef:
     kind: GitRepository

@@ -20,5 +20,3 @@ spec:
   dependsOn:
     - name: secrets
       namespace: external-secrets
-    - name: istio
-      namespace: istio-system

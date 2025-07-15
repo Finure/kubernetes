@@ -2,6 +2,22 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
+  name: &appname common
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/common
+  prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
   name: &appname istio
   namespace: flux-system
 spec:
@@ -62,7 +78,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/external-secrets
+  path: ./infra/external-secrets/external-secrets
   prune: true
   dependsOn:
     - name: vault
@@ -85,7 +101,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/external-secrets-backend
+  path: ./infra/external-secrets/external-secrets-backend
   prune: true
   dependsOn:
     - name: external-secrets
@@ -129,7 +145,7 @@ spec:
   path: ./infra/external-dns
   prune: true
   dependsOn:
-    - name: external-secrets-backend
+    - name: secrets
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -165,4 +181,4 @@ spec:
   path: ./infra/atlantis
   prune: true
   dependsOn:
-    - name: external-secrets-backend
+    - name: secrets

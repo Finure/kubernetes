@@ -61,3 +61,12 @@ metadata:
 spec:
   interval: 1h0m0s
   url: https://helm.releases.hashicorp.com
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: atlantis
+  namespace: tools
+spec:
+  interval: 1h0m0s
+  url: https://runatlantis.github.io/helm-charts

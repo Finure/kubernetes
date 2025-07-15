@@ -1,0 +1,86 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: atlantis
+    namespace: tools
+spec:
+    chart:
+        spec:
+            chart: atlantis
+            version: 5.18.0
+            sourceRef:
+                kind: HelmRepository
+                name: atlantis
+                namespace: tools
+    interval: 1h0m0s
+    values:
+        orgAllowlist: github.com/Finure/*
+        vcsSecretName: atlantis-github
+        githubApp:
+            id: "1608341"
+            installationId: "75934933"
+            slug: finure-bot
+        service:
+            type: ClusterIP
+        serviceAccount:
+            name: atlantis
+            annotations:
+                iam.gke.io/gcp-service-account: atlantis@finure-465001.iam.gserviceaccount.com
+        repoConfig: |
+            repos:
+            - id: /.*/
+              repo_config_file: _atlantis/finure.yaml
+              apply_requirements: [approved]
+              delete_source_branch_on_merge: true
+              workflow: default
+              allow_custom_workflows: true
+              allowed_overrides: [workflow]
+              pre_workflow_hooks:
+                - run: /etc/atl/scripts/repo-config-generator.sh
+                  description: Generate repo config
+            policies:
+              owners:
+                users:
+                  - lokesh1306
+              policy_sets:
+                - name: policies
+                  path: /atlantis-data/policies
+                  source: local
+            workflows:
+              default:
+                plan:
+                  steps:
+                    - init
+                    - plan
+                policy_check:
+                  steps:
+                    - policy_check:
+                        extra_args: ["-p /atlantis-data/policies/", "--all-namespaces"]
+        extraVolumes:
+            - name: generator
+              secret:
+                secretName: atlantis
+                defaultMode: 511
+                items:
+                    - key: generator
+                      path: scripts/repo-config-generator.sh
+            - name: policies
+              secret:
+                secretName: atlantis
+                defaultMode: 511
+                items:
+                    - key: policies
+                      path: default.rego
+        extraVolumeMounts:
+            - name: generator
+              mountPath: /etc/atl
+            - name: policies
+              mountPath: /atlantis-data/policies
+        extraArgs:
+            - --silence-no-projects
+            - --silence-vcs-status-no-plans
+            - --vcs-status-name=finure
+            - --hide-prev-plan-comments
+            - --enable-policy-checks
+            - --quiet-policy-checks
+            - --repo-allowlist=github.com/Finure/*

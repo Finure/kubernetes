@@ -1,0 +1,7 @@
+creation_rules:
+  - path_regex: atlantis-config
+    encrypted_regex: '^(.*)$'
+    gcp_kms: projects/finure-465001/locations/global/keyRings/gcp-finure/cryptoKeys/sops-key
+  - path_regex: atlantis.yaml
+    encrypted_regex: (^.*repoConfig$)
+    gcp_kms: projects/finure-465001/locations/global/keyRings/gcp-finure/cryptoKeys/sops-key

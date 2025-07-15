@@ -31,3 +31,19 @@ spec:
       protocol: HTTP
     hosts:
     - "vault.clokesh.me"
+---
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: tools-gateway
+  namespace: tools
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "atlantis.clokesh.me"

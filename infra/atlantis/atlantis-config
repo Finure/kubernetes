@@ -1,0 +1,16 @@
+{
+	"data": "ENC[AES256_GCM,data:KaG6lIecAGPx5qaY1TegxMyObx6M62nYvVpzxHdpn3eFb8UJbYz9QvAK45ZadVqj9SguTTtMZtDCPbmW8Ek6ILukYpTwiGYT/K7EMnoSRIrB6ma1JCnuYkviSDiAgCioTvacrkpBdRAqsbQjsWqgSQgjylrxWD24ZZA05XQfNuRJCH3kwqhuM1uUJ7beYGs9pSNp3iTB8pta15Kbhsc013s50w1vXts5vx5l8GsPbdz3gmfnLhRBPiPueMOxFxcrEIacNLigb3/f0v2OobYB9i35Q/MauEVP6AJG9XdFzAE1ttlpD/PVbP9msSy4h0Yj7tnPQ/VZGCBuhoyJRjBE98oiTpBHoXM721lZA3BzG9XN2JujAU3YFhyNTg1+HRu0OXixHyYc21tY2YZd6btNOPgP5qamaS3cRkB3EFKdjRwn4SYlMauK58vTu/H3lSulO8g3lRNnSfSWAAiwdXYHTp4rMx/mfviGoNpBt/XBbvnKa93csNzrSUY9FkImfyJu4K+h2/35N6+EGy+smkIgiQYwLZMGp9BGJBLLbANoFH9OfM1zprc+/zECDaOn/wR7oBcRrCbDPEDY5kzhb1wXMXrSTyunUKH1sgF9QYyZ/zSx,iv:R6AFYvj1/IECArmbHmJNZhjn/2cRQjf/8b4yOEpRhV0=,tag:zx7JoD02l38RcWpZGkSFHQ==,type:str]",
+	"sops": {
+		"gcp_kms": [
+			{
+				"resource_id": "projects/finure-465001/locations/global/keyRings/gcp-finure/cryptoKeys/sops-key",
+				"created_at": "2025-07-15T13:42:30Z",
+				"enc": "CiQA2FBvQ4ceCo0x237vQu0lkwaYVd9Eure2Trq2l0kuXWeaSekSSQD6dMGYzg6PdYXmrPYAjjPqHVk6WfIHvvrkagPHesnRJaZLze+N8orrRF0qab8kp71t9SBCFbD3bvHjnkzxEEQLVPwpCdnmlMA="
+			}
+		],
+		"lastmodified": "2025-07-15T13:42:30Z",
+		"mac": "ENC[AES256_GCM,data:ZaP86TKZZ//thB4Rt2hTsoSINJ/EA4ZrvjwftUQ94QGebhl5NQUFJsjonDXGPlaGs8y3sbSdVj6HcnxBYp9bXWgcxl9c3jTxpGMeou8ZckCxfVDvwDh0PT1hHB/MfEPavesBYpFdLY5adHsCfcVTo4+EGjKLpq2T6/RCFCG09Nw=,iv:GCAo8TgNrSFUCUpl/Av9+yDQ9LLIsyORrtd7oSOOPP8=,tag:WEhdLp2pn/Q5zkdGgnFlZA==,type:str]",
+		"encrypted_regex": "^(.*)$",
+		"version": "3.10.2"
+	}
+}

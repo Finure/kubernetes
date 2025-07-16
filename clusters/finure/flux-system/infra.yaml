@@ -216,3 +216,22 @@ spec:
     name: flux-system
   path: ./infra/cert-manager
   prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &appname kiali
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/kiali
+  prune: true
+  dependsOn:
+    - name: istio
+    

@@ -1,0 +1,33 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kiali
+  namespace: istio-system
+spec:
+  chart:
+    spec:
+      chart: kiali-server
+      version: 2.12.0
+      sourceRef:
+        kind: HelmRepository
+        name: kiali
+        namespace: istio-system
+  interval: 1h0m0s
+  values:
+    istio_namespace: istio-system
+    deployment:
+      pod_labels:
+        sidecar.istio.io/inject: "false"
+      view_only_mode: true
+    ingress:
+      enabled: false
+    server:
+      web_fqdn: kiali.clokesh.me
+    external_services:
+      prometheus:
+        url: http://prometheus-operated.monitoring.svc.cluster.local:9090
+      grafana:
+        enabled: true
+        url: http://promstack-grafana.monitoring.svc.cluster.local
+      istio:
+        root_namespace: istio-system

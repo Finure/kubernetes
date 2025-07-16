@@ -234,3 +234,21 @@ spec:
   prune: true
   dependsOn:
     - name: istio
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &appname jaeger
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/jaeger
+  prune: true
+  dependsOn:
+    - name: istio

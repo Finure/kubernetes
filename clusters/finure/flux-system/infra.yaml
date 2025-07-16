@@ -234,4 +234,3 @@ spec:
   prune: true
   dependsOn:
     - name: istio
-    

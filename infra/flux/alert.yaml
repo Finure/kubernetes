@@ -10,11 +10,29 @@ spec:
     name: slack
   eventSeverity: info
   eventSources:
-    - kind: HelmRelease
-      namespace: '*'
-      name: '*'
     - kind: Kustomization
-      namespace: '*'
+      namespace: 'flux-system'
       name: '*'
     - kind: GitRepository
+      name: 'flux-system'
+    - kind: HelmRelease
+      namespace: 'monitoring'
+      name: '*'
+    - kind: HelmRelease
+      namespace: 'istio-system'
+      name: '*'
+    - kind: HelmRelease
+      namespace: 'vault'
+      name: '*'
+    - kind: HelmRelease
+      namespace: 'external-secrets'
+      name: '*'
+    - kind: HelmRelease
+      namespace: 'external-dns'
+      name: '*'
+    - kind: HelmRelease
+      namespace: 'tools'
+      name: '*'
+    - kind: HelmRelease
+      namespace: 'cert-manager'
       name: '*'

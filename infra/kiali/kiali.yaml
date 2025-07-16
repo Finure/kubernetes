@@ -33,3 +33,10 @@ spec:
         internal_url: http://promstack-grafana.monitoring.svc.cluster.local
       istio:
         root_namespace: istio-system
+      tracing:
+        auth:
+          type: none
+        enabled: true
+        in_cluster_url: 'http://jaeger-query.istio-system.svc.cluster.local:16685/jaeger'
+        internal_url: 'http://jaeger-query.istio-system.svc.cluster.local:16685/jaeger'
+        use_grpc: true

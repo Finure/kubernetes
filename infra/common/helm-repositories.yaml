@@ -79,3 +79,12 @@ metadata:
 spec:
   interval: 1h0m0s
   url: https://charts.jetstack.io
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: kiali
+  namespace: istio-system
+spec:
+  interval: 1h0m0s
+  url: https://kiali.org/helm-charts

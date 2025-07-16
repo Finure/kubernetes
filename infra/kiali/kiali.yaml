@@ -25,9 +25,11 @@ spec:
       web_fqdn: kiali.clokesh.me
     external_services:
       prometheus:
+        internal_url: http://prometheus-operated.monitoring.svc.cluster.local:9090
         url: http://prometheus-operated.monitoring.svc.cluster.local:9090
       grafana:
         enabled: true
         url: http://promstack-grafana.monitoring.svc.cluster.local
+        internal_url: http://promstack-grafana.monitoring.svc.cluster.local
       istio:
         root_namespace: istio-system

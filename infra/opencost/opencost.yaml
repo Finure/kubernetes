@@ -1,0 +1,48 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: opencost
+    namespace: tools
+spec:
+    chart:
+        spec:
+            chart: opencost
+            version: 2.1.6
+            sourceRef:
+                kind: HelmRepository
+                name: opencost
+                namespace: tools
+    interval: 1h0m0s
+    values:
+        namespaceOverride: tools
+        opencost:
+            cloudIntegrationSecret: opencost
+            cloudCost:
+                enabled: true
+            metrics:
+                serviceMonitor:
+                    enabled: true
+            prometheus:
+                internal:
+                    enabled: true
+                    serviceName: prometheus-operated
+                    namespaceName: monitoring
+                    port: 9090
+                    scheme: http
+            exporter:
+                cloudProviderApiKey: ENC[AES256_GCM,data:KovzPwjN7TzjsrmLxvzvSgoC6Osm2msQ0kVdeEmsMnSByKu0Wqhh,iv:Nd1VKEgeflcVjqbTR4U6+amkn/wIpIGJSM0ZrGed09c=,tag:Xy4i7LbiyNVBmBo9Wq+xXg==,type:str]
+                defaultClusterId: ENC[AES256_GCM,data:OsbABO+5,iv:m00t9iVdsJmJtlXqhPDxA8Rpa7jewT9xYSTLt4AaR9M=,tag:yWumdVWydHP38gJtGRnx3Q==,type:str]
+        serviceAccount:
+            create: true
+            annotations:
+                iam.gke.io/gcp-service-account: opencost@finure-465001.iam.gserviceaccount.com
+            name: opencost
+sops:
+    gcp_kms:
+        - resource_id: projects/finure-465001/locations/global/keyRings/gcp-finure/cryptoKeys/sops-key
+          created_at: "2025-07-17T17:58:44Z"
+          enc: CiQA2FBvQxuSJi9psfQAsLCcRX/ApZ3jaDKcmOUdw4WVIIjaM+YSSQD6dMGYyqvRNbHmKX9Pyn2JpgIQkyUX0YS6qupwzIc70HYW+N8X9AzCLYVwGguUsXrw53BJ8M0iH+peIm0SYFwjzhfzFbKtpGE=
+    lastmodified: "2025-07-17T17:58:45Z"
+    mac: ENC[AES256_GCM,data:J19Rt984Fz9QHqwYZr0vjnGdbxN5ZEjynI2bkIpEldUVIkuwk/z337zYaTcN3ru0lUaaFf8A8eq7hfueiQtrT5HvEXvhWyY+UNb70KgRQC1K8imvWlKsCavDK2poPyXkJJtg6Yh81TL9MB+LrPjTcJ+iND0bhtf7Lbe5W0asZI8=,iv:iQB2kagjSfmQSYrPXrF7syvWbH5zmvEgTU6+OTGDHLE=,tag:XkTUhe4ytemhFUQcNEMC7w==,type:str]
+    encrypted_regex: (^.*exporter$)
+    version: 3.10.2

@@ -88,3 +88,21 @@ metadata:
 spec:
   interval: 1h0m0s
   url: https://kiali.org/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: argo
+  namespace: tools
+spec:
+  interval: 1h0m0s
+  url: https://argoproj.github.io/argo-helm
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: opencost
+  namespace: tools
+spec:
+  interval: 1h0m0s
+  url: https://opencost.github.io/opencost-helm-chart

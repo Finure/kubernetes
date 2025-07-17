@@ -1,0 +1,37 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: kyverno
+    namespace: tools
+spec:
+    chart:
+        spec:
+            chart: kyverno
+            version: 3.4.4
+            sourceRef:
+                kind: HelmRepository
+                name: kyverno
+                namespace: tools
+    interval: 1h0m0s
+    values:
+      grafana:
+        enabled: true
+        namespace: "monitoring"
+        grafanaDashboard:
+          create: true
+          folder: "General"
+          allowCrossNamespaceImport: true
+          matchLabels:
+            dashboards: "grafana"
+      admissionController:
+        serviceMonitor:
+          enabled: true
+      backgroundController:
+        serviceMonitor:
+          enabled: true
+      cleanupController:
+        serviceMonitor:
+          enabled: true
+      reportsController:
+        serviceMonitor:
+          enabled: true

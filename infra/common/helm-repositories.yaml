@@ -106,3 +106,12 @@ metadata:
 spec:
   interval: 1h0m0s
   url: https://opencost.github.io/opencost-helm-chart
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: kyverno
+  namespace: tools
+spec:
+  interval: 1h0m0s
+  url: https://kyverno.github.io/kyverno

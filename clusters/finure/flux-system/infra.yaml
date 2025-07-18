@@ -182,6 +182,8 @@ spec:
   prune: true
   dependsOn:
     - name: secrets
+  decryption:
+    provider: sops
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -284,6 +286,8 @@ spec:
     name: flux-system
   path: ./infra/opencost
   prune: true
+  decryption:
+    provider: sops
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

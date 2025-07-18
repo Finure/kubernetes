@@ -26,36 +26,7 @@ spec:
             name: atlantis
             annotations:
                 iam.gke.io/gcp-service-account: atlantis@finure-465001.iam.gserviceaccount.com
-        repoConfig: |
-            repos:
-            - id: /.*/
-              repo_config_file: _atlantis/finure.yaml
-              apply_requirements: [approved]
-              delete_source_branch_on_merge: true
-              workflow: default
-              allow_custom_workflows: true
-              allowed_overrides: [workflow]
-              pre_workflow_hooks:
-                - run: /etc/atl/scripts/repo-config-generator.sh
-                  description: Generate repo config
-            policies:
-              owners:
-                users:
-                  - lokesh1306
-              policy_sets:
-                - name: policies
-                  path: /atlantis-data/policies
-                  source: local
-            workflows:
-              default:
-                plan:
-                  steps:
-                    - init
-                    - plan
-                policy_check:
-                  steps:
-                    - policy_check:
-                        extra_args: ["-p /atlantis-data/policies/", "--all-namespaces"]
+        repoConfig: ENC[AES256_GCM,data:lrzJpzc8mvbXr/0GbGsszW5BiHfo81JCCCJANKPLehLfZWsGaX2iW5kYtuEPwuwGJw/lSHjiRNuTLOcUTtAOOobGWTTdpP74stIfmeWRVkeyqRuVl1HzRRNowwj/LC5ryjofzvBFcYrKfb8npz5uEF0v5pnOyq1jpyl00Lp43pQEPKzp68Rax4YAV0XBHu5OwoIuSfIcJLVKKw2rKh/h6lct2mjywvTifTDq5FMylsPJvOtbqex6jKMnSQG9MDRV8NAu0PRZMQqoHQISrN68DIBffJBMvX+mrKDJ5NVYMP/98bZ6CPJt1TL94rkX4bZWPfssk/CRVu/0bZJ0NVMTOk03yP7Y6QYtb+h8dawqgY07xP/6EmXaPHxl0Fk/rchLsWrqB/mhyeTCjWuax7Jt/DqeCXxLOLRugGZs8JYLLprS6imGPR9EnMEwkSEKBUtF01tmunczKGkx1lvJNZCrgRnCVSZ+JPLuI9EPAqFx1z7UIaRGqfVkMum0xzavRISF+vMpvtbknBOiTK5Ryr3orMoMdAoMAjg9TYvoG8dHtzUJ0EEM9hF+5ktO3KHSkL1HurQ9OQW9YCxIIkuBcW6D51rvXHRxFbemgQuBxbADOTtAsU28sXHy3IkvsF9Rdst0pTAiWwtsGSAwfoWrcKDOMpY8sWQp85xa6Fm2QNzUZeioRMSZQA43eIKmT6y0TseR1cLOswnCU6mXgrenRiPa9nCjYkECCS8giho1nPOWVQMEYL77YHoVzEmu7bJ47N1oXALHCwO5mN095XM6yLcaeIhyc5d0h/0UYbPYaANGxFouWFZjPg3bl7U7mOjq2LL+tsPYg5ViCKEB7X/rgGV00OTEIyiIPUb12x7RN1f53luNvncjP2Nq7ygo36D+Ad8Bw5se5zg=,iv:HIaVKPmCM9YCBHRHxCo7htCCJwcFe4KKC6Ll9x+wyf8=,tag:Pi89Tp0xM3WNhf9Ik+LlHw==,type:str]
         extraVolumes:
             - name: generator
               secret:
@@ -84,3 +55,12 @@ spec:
             - --enable-policy-checks
             - --quiet-policy-checks
             - --repo-allowlist=github.com/Finure/*
+sops:
+    gcp_kms:
+        - resource_id: projects/finure-465001/locations/global/keyRings/gcp-finure/cryptoKeys/sops-key
+          created_at: "2025-07-18T11:36:37Z"
+          enc: CiQA2FBvQ13l+C30v9rhVi5JjleeVIcqqU6s7u3dRRuoi5OetWESSQD6dMGYF4Uw9JXOLAGwfrsFUGUyooqrMHpXfIYmLf80vBNObfgVpdDelxi8Hf7LIYHL8Fj86CZiJrscT4fwUAmacteqGq8RUdk=
+    lastmodified: "2025-07-18T11:36:37Z"
+    mac: ENC[AES256_GCM,data:5QRvHQ5DOIJRT9cY2voNgHQ/R4xr0lGgB/Cs78kWl6Vx2kpTovVnOtp3ughI/kyQGTzAWAJBzvLl2ZhUYgvkm4fwFgAi11lK1LwmQ80f8UHxbchdIuQV4q1q1xevm7movrFK+ZoNwRvGWjEdIrEV3nKfOopfQVT/FmAF/gukIPA=,iv:EW7TPu7zYwp+UZ1KrH7D40BSorOGs7oioRs1c5mX5SQ=,tag:+uWTSvtql8DevM2m3FXX4Q==,type:str]
+    encrypted_regex: (^.*repoConfig$)
+    version: 3.10.2

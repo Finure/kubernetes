@@ -101,8 +101,17 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: opencost
+  name: airflow
   namespace: tools
+spec:
+  interval: 1h0m0s
+  url: https://airflow.apache.org
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: opencost
+  namespace: monitoring
 spec:
   interval: 1h0m0s
   url: https://opencost.github.io/opencost-helm-chart

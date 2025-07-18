@@ -134,6 +134,6 @@ spec:
         prefix: /
     route:
     - destination:
-        host: opencost.tools.svc.cluster.local
+        host: opencost.monitoring.svc.cluster.local
         port:
           number: 9090

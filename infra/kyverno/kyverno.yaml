@@ -14,15 +14,6 @@ spec:
                 namespace: tools
     interval: 1h0m0s
     values:
-      grafana:
-        enabled: true
-        namespace: "monitoring"
-        grafanaDashboard:
-          create: true
-          folder: "General"
-          allowCrossNamespaceImport: true
-          matchLabels:
-            dashboards: "grafana"
       admissionController:
         serviceMonitor:
           enabled: true

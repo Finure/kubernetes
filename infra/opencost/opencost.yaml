@@ -22,6 +22,8 @@ spec:
             metrics:
                 serviceMonitor:
                     enabled: true
+                    scrapeInterval: 60s
+                    honorLabels: true
             prometheus:
                 internal:
                     enabled: true

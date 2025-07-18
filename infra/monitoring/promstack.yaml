@@ -15,6 +15,9 @@ spec:
         namespace: monitoring
   interval: 1h0m0s
   values:
+    kube-state-metrics:
+        extraArgs:
+            - --metric-labels-allowlist=ingresses=[*],persistentvolumeclaims=[*],rolebindings=[*],services=[*],statefulsets=[*],endpointslices=[*],volumeattachments=[*],serviceaccounts=[*],configmaps=[*],endpoints=[*],horizontalpodautoscalers=[*],ingressclasses=[*],jobs=[*],nodes=[*],persistentvolumes=[*],clusterroles=[*],replicationcontrollers=[*],poddisruptionbudgets=[*],storageclasses=[*],validatingwebhookconfigurations=[*],resourcequotas=[*],pods=[*],roles=[*],leases=[*],secrets=[*],daemonsets=[*],deployments=[*],limitranges=[*],mutatingwebhookconfigurations=[*],replicasets=[*],certificatesigningrequests=[*],cronjobs=[*],namespaces=[*],networkpolicies=[*],clusterrolebindings=[*]
     alertmanager:
         enabled: true
         alertmanagerSpec:

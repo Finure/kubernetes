@@ -117,3 +117,23 @@ spec:
         host: kiali.istio-system.svc.cluster.local
         port:
           number: 20001
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: opencost
+  namespace: tools
+spec:
+  hosts:
+  - "opencost.clokesh.me"
+  gateways:
+  - tools-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: opencost.tools.svc.cluster.local
+        port:
+          number: 9090

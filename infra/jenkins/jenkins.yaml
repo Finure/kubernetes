@@ -16,6 +16,7 @@ spec:
   values:
     controller:
       jenkinsUrl: "https://jenkins.clokesh.me"
+      jenkinsUrlProtocol: "http"
       installPlugins:
         - kubernetes:latest
         - workflow-aggregator:latest

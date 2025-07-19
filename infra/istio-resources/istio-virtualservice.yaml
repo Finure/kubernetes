@@ -141,11 +141,11 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: jenkins
+  name: tekton
   namespace: tools
 spec:
   hosts:
-  - "jenkins.clokesh.me"
+  - "tekton.clokesh.me"
   gateways:
   - tools-gateway
   http:
@@ -154,6 +154,6 @@ spec:
         prefix: /
     route:
     - destination:
-        host: jenkins.tools.svc.cluster.local
+        host: tekton-dashboard.tools.svc.cluster.local
         port:
-          number: 8080
+          number: 9097

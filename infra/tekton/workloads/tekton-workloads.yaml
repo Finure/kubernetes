@@ -2,6 +2,7 @@ apiVersion: operator.tekton.dev/v1alpha1
 kind: TektonConfig
 metadata:
   name: config
+  namespace: tekton-pipelines
 spec:
   profile: all
   targetNamespace: tekton-pipelines
@@ -13,3 +14,10 @@ spec:
     schedule: "0 8 * * *"
   result:
     is_external_db: true
+    db_host: cnpg-cluster-rw.cnpg-database.svc.cluster.local
+    db_port: 5432
+    db_secret_name: tekton-results-postgres
+    db_secret_user_key: username
+    db_secret_password_key: password
+  tektonpruner:
+    disabled: true

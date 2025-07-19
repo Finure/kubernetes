@@ -65,5 +65,5 @@ spec:
     values:
       service:
         annotations: 
-          external-dns.alpha.kubernetes.io/hostname: "prometheus.clokesh.me,alertmanager.clokesh.me,vault.clokesh.me,grafana.clokesh.me,atlantis.clokesh.me,kiali.clokesh.me,opencost.clokesh.me"
+          external-dns.alpha.kubernetes.io/hostname: "prometheus.clokesh.me,alertmanager.clokesh.me,vault.clokesh.me,grafana.clokesh.me,atlantis.clokesh.me,kiali.clokesh.me,opencost.clokesh.me,tekton.clokesh.me"
           external-dns.alpha.kubernetes.io/cloudflare-proxied: "true" # for individual ingress (istio igw here) - can be set for all CF dns records using the --cloudflare-proxied flag in external-dns args

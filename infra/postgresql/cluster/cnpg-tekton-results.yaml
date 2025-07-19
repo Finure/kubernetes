@@ -5,6 +5,6 @@ metadata:
   namespace: cnpg-database
 spec:
   name: tekton-results
-  owner: result                 # The owner (must be an existing Postgres role/user)
+  owner: tekton-results
   cluster:
-    name: tekton-results-postgres  # Name of your Cluster CR
+    name: cnpg-cluster

@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: tekton-results
+  namespace: cnpg-database
+spec:
+  name: tekton-results
+  owner: result                 # The owner (must be an existing Postgres role/user)
+  cluster:
+    name: tekton-results-postgres  # Name of your Cluster CR

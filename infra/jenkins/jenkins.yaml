@@ -16,7 +16,6 @@ spec:
   values:
     controller:
       jenkinsUrl: "https://jenkins.clokesh.me"
-      jenkinsUrlProtocol: "http"
       installPlugins:
         - kubernetes:latest
         - workflow-aggregator:latest
@@ -27,7 +26,6 @@ spec:
         - git-server:latest
         - matrix-auth:latest
         - generic-webhook-trigger:latest
-        - helm:latest
         - configuration-as-code:latest
         - cloudbees-folder:latest
         - pipeline-github-lib:latest
@@ -40,7 +38,6 @@ spec:
         - pipeline-model-definition:latest
         - docker-workflow:latest
         - docker-commons:latest
-        - ansiColor:latest
         - build-timeout:latest
         - semantic-versioning-plugin:latest
         - github:latest

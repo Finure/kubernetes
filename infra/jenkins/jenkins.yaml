@@ -56,24 +56,13 @@ spec:
       create: true
       name: jenkins-sa
     agent:
-      envVars:
+      secretEnvVars:
         - name: GITHUB_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: jenkins
-              key: GITHUB_USERNAME
+          secretName: jenkins
+          secretKey: GITHUB_USERNAME
         - name: GITHUB_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: jenkins
-              key: GITHUB_TOKEN
+          secretName: jenkins
+          secretKey: GITHUB_TOKEN
         - name: SLACK_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: jenkins
-              key: SLACK_TOKEN
-        - name: SONAR_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: jenkins
-              key: SONAR_TOKEN
+          secretName: jenkins
+          secretKey: SLACK_TOKEN

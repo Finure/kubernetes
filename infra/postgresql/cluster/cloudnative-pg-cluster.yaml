@@ -22,6 +22,12 @@ spec:
                     iam.gke.io/gcp-service-account: cnpg-cluster@finure-465001.iam.gserviceaccount.com
           initdb:
             database: finure
+          roles:
+            - name: tekton-results
+              ensure: present
+              passwordSecret:
+                name: tekton-results-postgres
+              login: true
         backups:
             enabled: true
             provider: google

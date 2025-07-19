@@ -308,7 +308,7 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &appname cnpg
+  name: &appname cnpg-operator
   namespace: flux-system
 spec:
   commonMetadata:
@@ -318,5 +318,25 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/postgres
+  path: ./infra/postgresql/operator
   prune: true
+  dependsOn:
+    - name: vault
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &appname cnpg-cluster
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/postgresql/cluster
+  prune: true
+  dependsOn:
+    - name: cnpg-operator

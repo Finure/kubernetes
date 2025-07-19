@@ -1,0 +1,79 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: jenkins
+  namespace: tools
+spec:
+  chart:
+    spec:
+      chart: jenkins
+      version: 5.8.68
+      sourceRef:
+        kind: HelmRepository
+        name: jenkins
+        namespace: tools
+  interval: 1h0m0s
+  values:
+    controller:
+      jenkinsUrl: "https://jenkins.clokesh.me"
+      jenkinsUrlProtocol: "http"
+      installPlugins:
+        - kubernetes:latest
+        - workflow-aggregator:latest
+        - git:latest
+        - github-branch-source:latest
+        - gitlab-plugin:latest
+        - git-parameter:latest
+        - git-server:latest
+        - matrix-auth:latest
+        - generic-webhook-trigger:latest
+        - helm:latest
+        - configuration-as-code:latest
+        - cloudbees-folder:latest
+        - pipeline-github-lib:latest
+        - kubernetes-cli:latest
+        - kubernetes-credentials:latest
+        - credentials-binding:latest
+        - multibranch-scan-webhook-trigger:latest
+        - blueocean:latest
+        - pipeline-stage-view:latest
+        - pipeline-model-definition:latest
+        - docker-workflow:latest
+        - docker-commons:latest
+        - ansiColor:latest
+        - build-timeout:latest
+        - semantic-versioning-plugin:latest
+        - github:latest
+        - github-api:latest
+        - github-branch-source:latest
+        - timestamper:latest
+        - rebuild:latest
+        - badge:latest
+        - slack:latest
+        - mailer:latest
+        - role-strategy:latest
+    serviceAccount:
+      create: true
+      name: jenkins-sa
+    agent:
+      envVars:
+        - name: GITHUB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: jenkins
+              key: GITHUB_USERNAME
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: jenkins
+              key: GITHUB_TOKEN
+        - name: SLACK_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: jenkins
+              key: SLACK_TOKEN
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: jenkins
+              key: SONAR_TOKEN

@@ -43,7 +43,7 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: cnpg-system
+  name: cnpg-operator
 ---
 apiVersion: v1
 kind: Namespace

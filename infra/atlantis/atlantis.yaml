@@ -55,6 +55,11 @@ spec:
             - --enable-policy-checks
             - --quiet-policy-checks
             - --repo-allowlist=github.com/Finure/*
+        environmentSecrets:
+          - name: GITHUB_TOKEN
+            secretKeyRef:
+              name: atlantis-env
+              key: GITHUB_TOKEN
 sops:
     gcp_kms:
         - resource_id: projects/finure-465001/locations/global/keyRings/gcp-finure/cryptoKeys/sops-key

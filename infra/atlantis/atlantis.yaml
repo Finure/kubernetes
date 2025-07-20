@@ -26,7 +26,7 @@ spec:
             name: atlantis
             annotations:
                 iam.gke.io/gcp-service-account: atlantis@finure-465001.iam.gserviceaccount.com
-        repoConfig: ENC[AES256_GCM,data:lrzJpzc8mvbXr/0GbGsszW5BiHfo81JCCCJANKPLehLfZWsGaX2iW5kYtuEPwuwGJw/lSHjiRNuTLOcUTtAOOobGWTTdpP74stIfmeWRVkeyqRuVl1HzRRNowwj/LC5ryjofzvBFcYrKfb8npz5uEF0v5pnOyq1jpyl00Lp43pQEPKzp68Rax4YAV0XBHu5OwoIuSfIcJLVKKw2rKh/h6lct2mjywvTifTDq5FMylsPJvOtbqex6jKMnSQG9MDRV8NAu0PRZMQqoHQISrN68DIBffJBMvX+mrKDJ5NVYMP/98bZ6CPJt1TL94rkX4bZWPfssk/CRVu/0bZJ0NVMTOk03yP7Y6QYtb+h8dawqgY07xP/6EmXaPHxl0Fk/rchLsWrqB/mhyeTCjWuax7Jt/DqeCXxLOLRugGZs8JYLLprS6imGPR9EnMEwkSEKBUtF01tmunczKGkx1lvJNZCrgRnCVSZ+JPLuI9EPAqFx1z7UIaRGqfVkMum0xzavRISF+vMpvtbknBOiTK5Ryr3orMoMdAoMAjg9TYvoG8dHtzUJ0EEM9hF+5ktO3KHSkL1HurQ9OQW9YCxIIkuBcW6D51rvXHRxFbemgQuBxbADOTtAsU28sXHy3IkvsF9Rdst0pTAiWwtsGSAwfoWrcKDOMpY8sWQp85xa6Fm2QNzUZeioRMSZQA43eIKmT6y0TseR1cLOswnCU6mXgrenRiPa9nCjYkECCS8giho1nPOWVQMEYL77YHoVzEmu7bJ47N1oXALHCwO5mN095XM6yLcaeIhyc5d0h/0UYbPYaANGxFouWFZjPg3bl7U7mOjq2LL+tsPYg5ViCKEB7X/rgGV00OTEIyiIPUb12x7RN1f53luNvncjP2Nq7ygo36D+Ad8Bw5se5zg=,iv:HIaVKPmCM9YCBHRHxCo7htCCJwcFe4KKC6Ll9x+wyf8=,tag:Pi89Tp0xM3WNhf9Ik+LlHw==,type:str]
+        repoConfig: ENC[AES256_GCM,data:B++5lm6YEO8mF4FdlKPuRHhCSnyMuxBID8T29mH8S/WvZo1GPh3Ft1TQmGUEL1nxM4Hy58+bd29APKFwgG8ysJDq5xmW2ZTllfQBnLor4W+jCMVg7gi6Ioh+gDDr6geNXVmvTdyU2n94yROOkv8QQHF7ph1UnAmA0i/irx2a0yZZz/X3bCjq8eiJpfeTDsEh426FbMgVgMUBWEGv6+0y3u33dF/IAbygACfIwPH5JlXqYDZviyFX8T1K133ufzHCGO4B7Tyq1sEN9bUTO1GlS8Z317QzbkBSzFb2IhtXaVQQDtkukqEFX1ysn/2jAois/9tqr2ROqbm0Sl8e+xQsWqpIwLdpK0Itppu2vLWHwrUQW89XaohoNDR6frKKpdsIShXUT9Gb214khuWXI48UrLVmSz/Po0GGc2QoTxUFaAV+7YaGV72lPTFBoCYji/grx+Rg8a+4sZsO4ZEbvDwo79FmrzylJ74KL3g2b5mv5VVRq6NCK5XS10zhDiD1VG8h+pONGvbzhOUa/AI0wF3GCX027VZ/v/RTn9vWOSA5QedwXh6BY+NhRRqQipT/5bZc3W+QTKjbo0MmZwm8qfq7qWaAsi5IpMYaFKe/eOW99Iyb6cFtInFyE2/EMf50bU//ml/4GxtmJdPDfDzu02R6k11742PuC2548fyo0lb/5Z+paiklNOU7zkdzpJC2fJV5ypxvWIwAlt3mJp6thWliwvpvzHGE2OoRNLZscAHkYvKMqwUOky30eoDEZ0BVOa4M85RWDzm6ljLTyNQ4F4Z9OWWOY2I6Agur94fICmzZRkx8XEW8AeNp8BII2Dahvy1/pw8ZX/ETlqgCul4SpVcibOrPqHqwKdnqj6aAast6uZV7Mby4oLOf5cJIXzNr83hXpU3Wmu6oJpu/J57guB1qdT1XmKeIxBRS2UNvet/NCRF9uAO8+Gwg,iv:DTsMitdI4XIKYBNLG04GlT/6vsrcw7uYniUMmogs4dA=,tag:0cqvh7bW+FdLGnv04w8LHw==,type:str]
         extraVolumes:
             - name: generator
               secret:
@@ -56,16 +56,16 @@ spec:
             - --quiet-policy-checks
             - --repo-allowlist=github.com/Finure/*
         environmentSecrets:
-          - name: GITHUB_TOKEN
-            secretKeyRef:
-              name: atlantis-env
-              key: GITHUB_TOKEN
+            - name: GITHUB_TOKEN
+              secretKeyRef:
+                name: atlantis-env
+                key: GITHUB_TOKEN
 sops:
     gcp_kms:
         - resource_id: projects/finure-465001/locations/global/keyRings/gcp-finure/cryptoKeys/sops-key
           created_at: "2025-07-18T11:36:37Z"
           enc: CiQA2FBvQ13l+C30v9rhVi5JjleeVIcqqU6s7u3dRRuoi5OetWESSQD6dMGYF4Uw9JXOLAGwfrsFUGUyooqrMHpXfIYmLf80vBNObfgVpdDelxi8Hf7LIYHL8Fj86CZiJrscT4fwUAmacteqGq8RUdk=
-    lastmodified: "2025-07-18T11:36:37Z"
-    mac: ENC[AES256_GCM,data:5QRvHQ5DOIJRT9cY2voNgHQ/R4xr0lGgB/Cs78kWl6Vx2kpTovVnOtp3ughI/kyQGTzAWAJBzvLl2ZhUYgvkm4fwFgAi11lK1LwmQ80f8UHxbchdIuQV4q1q1xevm7movrFK+ZoNwRvGWjEdIrEV3nKfOopfQVT/FmAF/gukIPA=,iv:EW7TPu7zYwp+UZ1KrH7D40BSorOGs7oioRs1c5mX5SQ=,tag:+uWTSvtql8DevM2m3FXX4Q==,type:str]
+    lastmodified: "2025-07-20T15:37:35Z"
+    mac: ENC[AES256_GCM,data:AJ0rfrFBxRRDoJtu/7QghPN4QADRZZrpY+f6JZiayBGqLxHLkoYI0USoro4T8Q3nMf+mZ/foy8CkMRVTNJJHxl+Y7SsOuUgBvwTQpSyRJ2k/FHlf0gKOto7gpuxjwk1TDsr0AKSjZZU7my8kfP82YryjJLuoSLefQTjTgcGAAr4=,iv:AdxZhCqPOBe0HPbXrsOvQz5y3mCBvMgH1mtbv3Os8tc=,tag:f1bEJmUO+vy97DQ29971aA==,type:str]
     encrypted_regex: (^.*repoConfig$)
     version: 3.10.2

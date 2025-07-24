@@ -28,6 +28,11 @@ spec:
               passwordSecret:
                 name: tekton-results-postgres
               login: true
+            - name: finure
+              ensure: present
+              passwordSecret:
+                name: app-bootstrap
+              login: true
         backups:
             enabled: true
             provider: google

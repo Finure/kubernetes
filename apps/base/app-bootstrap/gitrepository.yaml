@@ -1,0 +1,13 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: app-bootstrap
+  namespace: ai
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  url: https://github.com/Finure/helm-app-bootstrap
+  secretRef:
+    name: github

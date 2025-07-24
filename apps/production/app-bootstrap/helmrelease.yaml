@@ -1,0 +1,13 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: app-bootstrap
+  namespace: ai
+spec:
+  chart:
+    spec:
+      valuesFiles:
+        - k8s/environments/staging/values.yaml
+      sourceRef:
+        kind: GitRepository
+        name: app-bootstrap

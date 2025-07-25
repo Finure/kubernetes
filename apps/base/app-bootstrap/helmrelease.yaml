@@ -7,7 +7,7 @@ spec:
   interval: 1m
   chart:
     spec:
-      chart: k8s/charts/app-bootstrap
+      chart: k8s/helm-charts/app-bootstrap
       sourceRef:
         kind: GitRepository
         name: app-bootstrap

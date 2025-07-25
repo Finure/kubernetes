@@ -7,7 +7,7 @@ spec:
   chart:
     spec:
       valuesFiles:
-        - k8s/environments/staging/values.yaml
+        - k8s/environments/production/values.yaml
       sourceRef:
         kind: GitRepository
         name: app-bootstrap

@@ -8,6 +8,6 @@ spec:
   interval: 1m0s
   ref:
     branch: main
-  url: https://github.com/Finure/helm-app-bootstrap
+  url: https://github.com/Finure/app-bootstrap
   secretRef:
     name: github

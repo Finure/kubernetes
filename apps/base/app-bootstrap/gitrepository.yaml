@@ -10,4 +10,4 @@ spec:
     branch: main
   url: https://github.com/Finure/app-bootstrap
   secretRef:
-    name: github
+    name: ghcr

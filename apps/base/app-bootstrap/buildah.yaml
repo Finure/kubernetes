@@ -1,0 +1,240 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: buildah
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/version: "0.9"
+  annotations:
+    tekton.dev/categories: Image Build
+    tekton.dev/pipelines.minVersion: "0.50.0"
+    tekton.dev/tags: image-build
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le,linux/arm64"
+    tekton.dev/displayName: buildah
+spec:
+  description: >-
+    Buildah task builds source into a container image and
+    then pushes it to a container registry.
+  params:
+    - name: IMAGE
+      description: Reference of the image buildah will produce.
+    - name: BUILDER_IMAGE
+      description: The location of the buildah builder image.
+      default: quay.io/buildah/stable:v1
+    - name: STORAGE_DRIVER
+      description: Set buildah storage driver
+      default: overlay
+    - name: DOCKERFILE
+      description: Path to the Dockerfile to build.
+      default: ./Dockerfile
+    - name: CONTEXT
+      description: Path to the directory to use as context.
+      default: .
+    - name: TLSVERIFY
+      description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
+      default: "true"
+    - name: FORMAT
+      description: The format of the built container, oci or docker
+      default: "oci"
+    - name: BUILD_EXTRA_ARGS
+      description: Extra parameters passed for the build command.
+      default: ""
+    - name: PUSH_EXTRA_ARGS
+      description: Extra parameters passed for the push command.
+      type: string
+      default: ""
+    - name: SKIP_PUSH
+      description: Skip pushing the built image
+      default: "false"
+    - name: BUILD_ARGS
+      description: Dockerfile build arguments, array of key=value
+      type: array
+      default:
+        - ""
+    - name: git-branch
+      description: Git branch to tag
+      type: string
+    - name: repo-name
+      description: Repository name
+      type: string
+    - name: repo-owner
+      description: Repository owner
+      type: string
+    - name: git-tag-message
+      description: Message for the Git tag
+      type: string
+      default: "Automated tag created after successful image build"
+    - name: skip-git-tag
+      description: Skip creating Git tag
+      default: "false"
+    - name: GITHUB_TOKEN_SECRET_NAME
+      description: |
+        The name of the kubernetes secret that contains the GitHub token, default: github
+      type: string
+      default: github
+    - name: GITHUB_TOKEN_SECRET_KEY
+      description: |
+        The key within the kubernetes secret that contains the GitHub token, default: token
+      type: string
+      default: token
+    - name: API_PATH_PREFIX
+      description: |
+        The API path prefix, GitHub Enterprise has a prefix e.g. /api/v3
+      default: ""
+      type: string
+    - name: GITHUB_HOST_URL
+      description: |
+        The GitHub host, adjust this if you run a GitHub enteprise.
+      default: "https://api.github.com"
+      type: string
+    - name: SHA
+      description: |
+        Commit SHA to set the status for.
+      type: string
+  workspaces:
+    - name: shared-workspace
+      description: Source code context including Dockerfile.
+    - name: sslcertdir
+      optional: true
+    - name: github
+      description: Optional workspace to provide .docker/config.json for registry auth.
+  results:
+    - name: IMAGE_DIGEST
+      description: Digest of the image just built.
+    - name: IMAGE_URL
+      description: Image repository where the built image would be pushed to
+    - name: GIT_TAG_CREATED
+      description: The Git tag that was created
+  steps:
+    - name: build-and-push
+      image: $(params.BUILDER_IMAGE)
+      workingDir: $(workspaces.shared-workspace.path)
+      env:
+        - name: PARAM_IMAGE
+          value: $(params.IMAGE)
+        - name: PARAM_STORAGE_DRIVER
+          value: $(params.STORAGE_DRIVER)
+        - name: PARAM_DOCKERFILE
+          value: $(params.DOCKERFILE)
+        - name: PARAM_CONTEXT
+          value: $(params.CONTEXT)
+        - name: PARAM_TLSVERIFY
+          value: $(params.TLSVERIFY)
+        - name: PARAM_FORMAT
+          value: $(params.FORMAT)
+        - name: PARAM_BUILD_EXTRA_ARGS
+          value: $(params.BUILD_EXTRA_ARGS)
+        - name: PARAM_PUSH_EXTRA_ARGS
+          value: $(params.PUSH_EXTRA_ARGS)
+        - name: PARAM_SKIP_PUSH
+          value: $(params.SKIP_PUSH)
+      securityContext:
+        privileged: true
+      args:
+        - $(params.BUILD_ARGS[*])
+      script: |
+        PARAM_IMAGE=$(echo "$PARAM_IMAGE" | tr '[:upper:]' '[:lower:]')
+        BUILD_ARGS=()
+        for buildarg in "$@"; do
+          [ "$buildarg" != "" ] && BUILD_ARGS+=("--build-arg=$buildarg")
+        done
+
+        [ "$(workspaces.sslcertdir.bound)" = "true" ] && CERT_DIR_FLAG="--cert-dir=$(workspaces.sslcertdir.path)" || CERT_DIR_FLAG=""
+        [ "$(workspaces.github.bound)" = "true" ] && export DOCKER_CONFIG="$(workspaces.github.path)"
+
+        # Build the image
+        buildah ${CERT_DIR_FLAG} "--storage-driver=${PARAM_STORAGE_DRIVER}" bud "${BUILD_ARGS[@]}" ${PARAM_BUILD_EXTRA_ARGS} \
+          "--format=${PARAM_FORMAT}" "--tls-verify=${PARAM_TLSVERIFY}" \
+          -f "${PARAM_DOCKERFILE}" -t "${PARAM_IMAGE}" "${PARAM_CONTEXT}"
+
+        [ "${PARAM_SKIP_PUSH}" = "true" ] && echo "Push skipped" && exit 0
+
+        # Push the image
+        buildah ${CERT_DIR_FLAG} "--storage-driver=${PARAM_STORAGE_DRIVER}" push \
+          "--tls-verify=${PARAM_TLSVERIFY}" --digestfile /tmp/image-digest ${PARAM_PUSH_EXTRA_ARGS} \
+          "${PARAM_IMAGE}" "docker://${PARAM_IMAGE}"
+
+        tee "$(results.IMAGE_DIGEST.path)" < /tmp/image-digest
+        printf '%s' "${PARAM_IMAGE}" | tee "$(results.IMAGE_URL.path)"
+
+    - name: create-github-release
+      image: alpine:latest
+      workingDir: $(workspaces.shared-workspace.path)
+      volumeMounts:
+        - name: githubtoken
+          mountPath: /etc/github-token
+      env:
+        - name: BUILT_IMAGE
+          value: $(params.IMAGE)
+        - name: REPO_OWNER
+          value: $(params.repo-owner)
+        - name: REPO_NAME
+          value: $(params.repo-name)
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: $(params.GITHUB_TOKEN_SECRET_NAME)
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: $(params.GITHUB_TOKEN_SECRET_KEY)
+        - name: GITHUB_HOST_URL
+          value: $(params.GITHUB_HOST_URL)
+        - name: API_PATH_PREFIX
+          value: $(params.API_PATH_PREFIX)
+        - name: SHA
+          value: $(params.SHA)
+      script: |
+        #!/bin/sh
+        set -e
+
+        if [ "$(params.skip-git-tag)" = "true" ]; then
+          echo "⚠️ GitHub release skipped"
+          printf '%s' "skipped" | tee "$(results.GIT_TAG_CREATED.path)"
+          exit 0
+        fi
+
+        apk add --no-cache curl jq
+        echo "📦 Input environment:"
+        echo "BUILT_IMAGE=$BUILT_IMAGE"
+        echo "REPO_OWNER=$REPO_OWNER"
+        echo "REPO_NAME=$REPO_NAME"
+        echo "GITHUB_HOST_URL=$GITHUB_HOST_URL"
+        IMAGE_TAG="${BUILT_IMAGE##*:}"
+        echo "Resolved IMAGE_TAG=$IMAGE_TAG"
+
+        IMAGE_DIGEST=$(cat /tekton/results/IMAGE_DIGEST)
+        echo "Read IMAGE_DIGEST=$IMAGE_DIGEST"
+
+        # Read GitHub token using the same method as the working task
+        TOKEN_PATH="/etc/github-token/$GITHUB_TOKEN_SECRET_KEY"
+        if [ ! -f "$TOKEN_PATH" ]; then
+          echo "❌ Token file not found at $TOKEN_PATH"
+          exit 1
+        fi
+        GITHUB_TOKEN=$(cat "$TOKEN_PATH")
+        echo "✅ Token loaded from $TOKEN_PATH"
+        echo "SHA: $SHA"
+        echo "POST_URL: $GITHUB_HOST_URL/repos/$REPO_OWNER/$REPO_NAME/git/ref"
+        echo "REF: refs/tags/$IMAGE_TAG"
+
+        PAYLOAD=$(jq -n -c \
+          --arg tag "$IMAGE_TAG" \
+          --arg target "$SHA" \
+          --arg name "Release $IMAGE_TAG" \
+          --arg body "Container image: $BUILT_IMAGE@$IMAGE_DIGEST" \
+          '{
+            tag_name: $tag,
+            target_commitish: $target,
+            name: $name,
+            body: $body,
+            draft: false,
+            prerelease: false
+          }')
+
+        echo "URL: $GITHUB_HOST_URL/repos/$REPO_OWNER/$REPO_NAME/releases"
+        echo "Token: $GITHUB_TOKEN"
+        echo "Payload: $PAYLOAD"
+        echo "Sending: curl -s -X POST \"$GITHUB_HOST_URL/repos/$REPO_OWNER/$REPO_NAME/releases\" -H \"Authorization: Bearer $GITHUB_TOKEN\" -H \"Accept: application/vnd.github.v3+json\" -H \"Content-Type: application/json\" -d '$PAYLOAD'"
+        curl -s -X POST "$GITHUB_HOST_URL/repos/$REPO_OWNER/$REPO_NAME/releases" -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" -H "Content-Type: application/json" -d "$PAYLOAD"
+
+  volumes:
+    - name: githubtoken
+      secret:
+        secretName: $(params.GITHUB_TOKEN_SECRET_NAME)

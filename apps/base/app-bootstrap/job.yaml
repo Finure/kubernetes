@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: z-app-bootstrap-bootstrap
+  namespace: ai
+spec:
+  backoffLimit: 6
+  template:
+    spec:
+      containers:
+      - command:
+        - python
+        - load_data.py
+        envFrom:
+        - secretRef:
+            name: app-bootstrap
+        image: ghcr.io/finure/app-bootstrap:1.0.1
+        imagePullPolicy: IfNotPresent
+        name: app
+      imagePullSecrets:
+      - name: ghcr
+      initContainers:
+      - command:
+        - sleep 
+        - infinity
+        envFrom:
+        - secretRef:
+            name: app-bootstrap
+        image: flyway/flyway:11.10.3
+        imagePullPolicy: IfNotPresent
+        name: flyway
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      restartPolicy: OnFailure
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

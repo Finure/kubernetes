@@ -414,7 +414,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/kafka-operator
+  path: ./infra/kafka/kafka-operator
   prune: true
   dependsOn:
     - name: reflector
@@ -432,7 +432,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/kafka-cluster
+  path: ./infra/kafka/kafka-cluster
   prune: true
   dependsOn:
     - name: kafka-operator
@@ -450,7 +450,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/kafka-apps
+  path: ./infra/kafka/kafka-apps
   prune: true
   dependsOn:
     - name: kafka-cluster
@@ -468,7 +468,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/kafka-secrets
+  path: ./infra/kafka/kafka-secrets
   prune: true
   dependsOn:
     - name: kafka-apps

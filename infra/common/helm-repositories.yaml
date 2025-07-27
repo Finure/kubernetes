@@ -134,3 +134,13 @@ spec:
   interval: 1h0m0s
   type: "oci"
   url: oci://quay.io/strimzi-helm
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: reflector
+  namespace: tools
+spec:
+  interval: 1h0m0s
+  type: "oci"
+  url: oci://ghcr.io/emberstack/helm-charts

@@ -124,3 +124,12 @@ metadata:
 spec:
   interval: 1h0m0s
   url: https://cloudnative-pg.github.io/charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: strimzi
+  namespace: kafka
+spec:
+  interval: 1h0m0s
+  url: oci://quay.io/strimzi-helm

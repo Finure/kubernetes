@@ -1,0 +1,449 @@
+apiVersion: triggers.tekton.dev/v1
+kind: EventListener
+metadata:
+  name: github-webhook-listener
+  namespace: tekton-pipelines
+spec:
+  serviceAccountName: tekton-triggers-sa
+  triggers:
+    - name: github-pr-trigger
+      interceptors:
+        - name: "github"
+          ref:
+            name: "github"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: tekton-github
+                secretKey: secretToken
+            - name: "eventTypes"
+              value: ["pull_request"]
+        - name: "cel"
+          ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.action in ['opened', 'synchronize', 'reopened']"
+      bindings:
+        - ref: github-pr-binding
+      template:
+        ref: pipeline-template
+    - name: github-push-trigger
+      interceptors:
+        - name: "github"
+          ref:
+            name: "github"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: tekton-github
+                secretKey: secretToken
+            - name: "eventTypes"
+              value: ["push"]
+        - name: "cel"
+          ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.ref.startsWith('refs/heads/')"
+      bindings:
+        - ref: github-push-binding
+      template:
+        ref: pipeline-template
+
+---
+# TriggerBinding for PR events
+apiVersion: triggers.tekton.dev/v1
+kind: TriggerBinding
+metadata:
+  name: github-pr-binding
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: git-repo-url
+      value: $(body.pull_request.head.repo.clone_url)
+    - name: git-revision
+      value: $(body.pull_request.head.sha)
+    - name: git-branch
+      value: $(body.pull_request.head.ref)
+    - name: target-branch
+      value: $(body.pull_request.base.ref)
+    - name: repo-name
+      value: $(body.repository.name)
+    - name: repo-owner
+      value: $(body.repository.owner.login)
+    - name: pr-number
+      value: $(body.pull_request.number)
+    - name: event-type
+      value: "pull_request"
+
+---
+# TriggerBinding for push events
+apiVersion: triggers.tekton.dev/v1
+kind: TriggerBinding
+metadata:
+  name: github-push-binding
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: git-repo-url
+      value: $(body.repository.clone_url)
+    - name: git-revision
+      value: $(body.after)
+    - name: git-branch
+      value: $(body.ref)
+    - name: target-branch
+      value: $(body.ref)
+    - name: repo-name
+      value: $(body.repository.name)
+    - name: repo-owner
+      value: $(body.repository.owner.login)
+    - name: pr-number
+      value: ""
+    - name: event-type
+      value: "push"
+
+---
+# TriggerTemplate
+apiVersion: triggers.tekton.dev/v1
+kind: TriggerTemplate
+metadata:
+  name: pipeline-template
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: git-repo-url
+    - name: git-revision
+    - name: git-branch
+    - name: target-branch
+    - name: repo-name
+    - name: repo-owner
+    - name: pr-number
+      default: ""
+    - name: event-type
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: $(tt.params.repo-name)-$(tt.params.event-type)-
+        namespace: ai
+      spec:
+        pipelineRef:
+          name: reusable-ci-cd-pipeline
+        params:
+          - name: git-repo-url
+            value: $(tt.params.git-repo-url)
+          - name: git-revision
+            value: $(tt.params.git-revision)
+          - name: git-branch
+            value: $(tt.params.git-branch)
+          - name: target-branch
+            value: $(tt.params.target-branch)
+          - name: repo-name
+            value: $(tt.params.repo-name)
+          - name: repo-owner
+            value: $(tt.params.repo-owner)
+          - name: pr-number
+            value: $(tt.params.pr-number)
+          - name: event-type
+            value: $(tt.params.event-type)
+          - name: environment
+            value: $(tt.params.target-branch)
+        workspaces:
+          - name: shared-workspace
+            emptyDir: {}
+          - name: tekton-github
+            secret:
+              secretName: tekton-github
+
+---
+# Main reusable pipeline
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: reusable-ci-cd-pipeline
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: git-repo-url
+      type: string
+    - name: git-revision
+      type: string
+    - name: git-branch
+      type: string
+    - name: target-branch
+      type: string
+    - name: repo-name
+      type: string
+    - name: repo-owner
+      type: string
+    - name: pr-number
+      type: string
+      default: ""
+    - name: event-type
+      type: string
+    - name: environment
+      type: string
+    - name: registry-url
+      type: string
+      default: "ghcr.io"
+    - name: dockerfile-path
+      type: string
+      default: "./Dockerfile"
+    - name: helm-chart-path
+      type: string
+      default: "./helm"
+  
+  workspaces:
+    - name: shared-workspace
+    - name: tekton-github
+  
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+        kind: ClusterTask
+      params:
+        - name: url
+          value: $(params.git-repo-url)
+        - name: revision
+          value: $(params.git-revision)
+        - name: deleteExisting
+          value: "true"
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: tekton-github
+          workspace: tekton-github
+
+    - name: lint-code
+      taskRef:
+        name: flake8
+        kind: ClusterTask
+      params:
+        - name: path
+          value: "."
+        - name: requirements_file
+          value: "requirements.txt"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      runAfter:
+        - git-clone
+
+    - name: determine-version
+      taskRef:
+        name: determine-semantic-version
+      params:
+        - name: git-branch
+          value: $(params.git-branch)
+        - name: target-branch
+          value: $(params.target-branch)
+        - name: event-type
+          value: $(params.event-type)
+        - name: pr-number
+          value: $(params.pr-number)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      runAfter:
+        - lint-code
+
+    - name: build-push-image
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      params:
+        - name: IMAGE
+          value: "$(params.registry-url)/$(params.repo-owner)/$(params.repo-name):$(tasks.determine-version.results.version)"
+        - name: DOCKERFILE
+          value: $(params.dockerfile-path)
+        - name: CONTEXT
+          value: .
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: tekton-github
+          workspace: tekton-github
+      runAfter:
+        - determine-version
+
+    - name: update-helm-chart
+      taskRef:
+        name: update-helm-version
+      params:
+        - name: image-tag
+          value: "$(tasks.determine-version.results.version)"
+        - name: helm-chart-path
+          value: $(params.helm-chart-path)
+        - name: git-branch
+          value: $(params.git-branch)
+        - name: event-type
+          value: $(params.event-type)
+        - name: repo-name
+          value: $(params.repo-name)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: tekton-github
+          workspace: tekton-github
+      runAfter:
+        - build-push-image
+      when:
+        - input: "$(params.event-type)"
+          operator: in
+          values: ["push"]
+
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: determine-semantic-version
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: git-branch
+      type: string
+    - name: target-branch
+      type: string
+    - name: event-type
+      type: string
+    - name: pr-number
+      type: string
+      default: ""
+  workspaces:
+    - name: source
+  results:
+    - name: version
+      description: The semantic version to use
+  steps:
+    - name: determine-version
+      image: alpine/git:latest
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/sh
+        set -e
+        
+        # Install semver tool
+        apk add --no-cache curl jq
+        curl -L https://github.com/fsaintjacques/semver-tool/raw/master/src/semver -o /usr/local/bin/semver
+        chmod +x /usr/local/bin/semver
+        
+        # Get the latest tag
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        echo "Latest tag: $LATEST_TAG"
+        
+        # Remove 'v' prefix if present
+        LATEST_VERSION=$(echo $LATEST_TAG | sed 's/^v//')
+        
+        # Determine version based on branch and event type
+        BRANCH_NAME=$(echo "$(params.git-branch)" | sed 's|refs/heads/||')
+        TARGET_BRANCH=$(echo "$(params.target-branch)" | sed 's|refs/heads/||')
+        
+        echo "Branch: $BRANCH_NAME"
+        echo "Target Branch: $TARGET_BRANCH"
+        echo "Event Type: $(params.event-type)"
+        
+        if [ "$(params.event-type)" = "pull_request" ]; then
+            # For PRs, use a pre-release version
+            PR_NUM="$(params.pr-number)"
+            COMMIT_SHORT=$(git rev-parse --short HEAD)
+            NEW_VERSION="$LATEST_VERSION-pr.$PR_NUM.$COMMIT_SHORT"
+        else
+            # For pushes, increment based on target branch
+            case "$TARGET_BRANCH" in
+                main|master)
+                    # Major version bump for main/master
+                    NEW_VERSION=$(semver bump minor $LATEST_VERSION)
+                    ;;
+                staging|develop|dev)
+                    # Minor version bump for staging/develop
+                    NEW_VERSION=$(semver bump patch $LATEST_VERSION)
+                    ;;
+                *)
+                    # Patch version with branch name for feature branches
+                    COMMIT_SHORT=$(git rev-parse --short HEAD)
+                    CLEAN_BRANCH=$(echo "$TARGET_BRANCH" | sed 's/[^a-zA-Z0-9]/-/g')
+                    NEW_VERSION="$LATEST_VERSION-$CLEAN_BRANCH.$COMMIT_SHORT"
+                    ;;
+            esac
+        fi
+        
+        echo "New version: $NEW_VERSION"
+        echo -n "$NEW_VERSION" > $(results.version.path)
+
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: update-helm-version
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: image-tag
+      type: string
+    - name: helm-chart-path
+      type: string
+    - name: git-branch
+      type: string
+    - name: event-type
+      type: string
+    - name: repo-name
+      type: string
+  workspaces:
+    - name: source
+    - name: tekton-github
+  steps:
+    - name: update-versions
+      image: alpine/git:latest
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: GIT_CONFIG_GLOBAL
+          value: /tekton/home/.gitconfig
+      script: |
+        #!/bin/sh
+        set -e
+        
+        # Install yq for YAML manipulation
+        apk add --no-cache curl
+        curl -L https://github.com/mikefarah/yq/releases/download/v4.35.2/yq_linux_amd64 -o /usr/local/bin/yq
+        chmod +x /usr/local/bin/yq
+        
+        # Configure git
+        git config --global user.email "tekton@ci.local"
+        git config --global user.name "Tekton CI"
+        git config --global --add safe.directory $(workspaces.source.path)
+        
+        HELM_PATH="$(params.helm-chart-path)"
+        IMAGE_TAG="$(params.image-tag)"
+        
+        echo "Updating helm chart at $HELM_PATH with image tag: $IMAGE_TAG"
+        
+        # Update Chart.yaml version
+        if [ -f "$HELM_PATH/Chart.yaml" ]; then
+            echo "Updating Chart.yaml version..."
+            yq eval ".version = \"$IMAGE_TAG\"" -i "$HELM_PATH/Chart.yaml"
+            yq eval ".appVersion = \"$IMAGE_TAG\"" -i "$HELM_PATH/Chart.yaml"
+        fi
+        
+        # Update values.yaml image tag
+        if [ -f "$HELM_PATH/values.yaml" ]; then
+            echo "Updating values.yaml image tag..."
+            yq eval ".image.tag = \"$IMAGE_TAG\"" -i "$HELM_PATH/values.yaml"
+        fi
+        
+        # Check if there are any changes
+        if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+        fi
+        
+        # Commit and push changes
+        git add "$HELM_PATH/"
+        git commit -m "chore: update helm chart version to $IMAGE_TAG [skip ci]"
+        
+        # Push to the same branch
+        BRANCH_NAME=$(echo "$(params.git-branch)" | sed 's|refs/heads/||')
+        git push origin HEAD:$BRANCH_NAME
+        
+        echo "Successfully updated and committed helm chart versions"

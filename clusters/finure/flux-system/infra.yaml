@@ -397,6 +397,12 @@ spec:
     kind: GitRepository
     name: flux-system
   path: ./infra/reflector
+  wait: true
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: reflector
+      namespace: tools
   prune: true
   dependsOn:
     - name: secrets
@@ -416,6 +422,12 @@ spec:
     name: flux-system
   path: ./infra/kafka/kafka-operator
   prune: true
+  wait: true
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: strimzi-cluster-operator
+      namespace: kafka
   dependsOn:
     - name: reflector
 ---
@@ -433,6 +445,12 @@ spec:
     kind: GitRepository
     name: flux-system
   path: ./infra/kafka/kafka-cluster
+  wait: true
+  healthChecks:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      kind: Kafka
+      name: finure
+      namespace: kafka
   prune: true
   dependsOn:
     - name: kafka-operator
@@ -451,6 +469,12 @@ spec:
     kind: GitRepository
     name: flux-system
   path: ./infra/kafka/kafka-apps
+  wait: true
+  healthChecks:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      kind: KafkaUser
+      name: finure
+      namespace: kafka
   prune: true
   dependsOn:
     - name: kafka-cluster
@@ -469,6 +493,12 @@ spec:
     kind: GitRepository
     name: flux-system
   path: ./infra/kafka/kafka-secrets
+  wait: true
+  healthChecks:
+    - apiVersion: v1
+      kind: Secret
+      name: kafka
+      namespace: ai
   prune: true
   dependsOn:
     - name: kafka-apps

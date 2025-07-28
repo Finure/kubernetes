@@ -16,3 +16,6 @@ spec:
   values:
     serviceAccount: 
       name: reflector
+    configuration:
+      watcher:
+        timeout: "900"

@@ -471,8 +471,8 @@ spec:
   path: ./infra/kafka/kafka-apps
   wait: true
   healthChecks:
-    - apiVersion: kafka.strimzi.io/v1beta2
-      kind: KafkaUser
+    - apiVersion: v1
+      kind: Secret
       name: finure
       namespace: kafka
   prune: true

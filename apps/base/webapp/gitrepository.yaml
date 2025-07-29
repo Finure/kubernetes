@@ -2,12 +2,12 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: app-bootstrap
+  name: webapp
   namespace: ai
 spec:
   interval: 1m0s
   ref:
     branch: main
-  url: https://github.com/Finure/app-bootstrap
+  url: https://github.com/Finure/webapp
   secretRef:
     name: github

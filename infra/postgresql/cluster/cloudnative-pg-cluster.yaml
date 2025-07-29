@@ -31,7 +31,7 @@ spec:
             - name: finure
               ensure: present
               passwordSecret:
-                name: app-bootstrap
+                name: webapp
               login: true
         backups:
             enabled: true

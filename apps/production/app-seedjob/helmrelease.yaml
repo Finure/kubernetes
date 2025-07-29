@@ -1,7 +1,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: webapp
+  name: app-seedjob
   namespace: ai
 spec:
   chart:
@@ -10,4 +10,4 @@ spec:
         - k8s/environments/production/values.yaml
       sourceRef:
         kind: GitRepository
-        name: webapp
+        name: app-seedjob

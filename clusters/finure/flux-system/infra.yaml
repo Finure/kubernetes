@@ -451,6 +451,11 @@ spec:
       kind: Kafka
       name: finure
       namespace: kafka
+  healthCheckExprs:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      kind: Kafka
+      failed: status.conditions.filter(e, e.type == 'Ready').all(e, e.status == 'False')
+      current: status.conditions.filter(e, e.type == 'Ready').all(e, e.status == 'True')
   prune: true
   dependsOn:
     - name: kafka-operator
@@ -471,10 +476,15 @@ spec:
   path: ./infra/kafka/kafka-apps
   wait: true
   healthChecks:
-    - apiVersion: v1
-      kind: Secret
+    - apiVersion: kafka.strimzi.io/v1beta2
+      kind: KafkaUser
       name: finure
       namespace: kafka
+  healthCheckExprs:
+    - apiVersion: kafka.strimzi.io/v1beta2
+      kind: Kafka
+      failed: status.conditions.filter(e, e.type == 'Ready').all(e, e.status == 'False') || status.secret != 'finure'
+      current: status.conditions.filter(e, e.type == 'Ready').all(e, e.status == 'True') && status.secret == 'finure'
   prune: true
   dependsOn:
     - name: kafka-cluster
@@ -494,11 +504,6 @@ spec:
     name: flux-system
   path: ./infra/kafka/kafka-secrets
   wait: true
-  healthChecks:
-    - apiVersion: v1
-      kind: Secret
-      name: kafka
-      namespace: ai
   prune: true
   dependsOn:
     - name: kafka-apps

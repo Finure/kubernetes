@@ -2,12 +2,12 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: webapp
+  name: app-seedjob
   namespace: ai
 spec:
   interval: 1m0s
   ref:
     branch: main
-  url: https://github.com/Finure/webapp
+  url: https://github.com/Finure/app-seedjob
   secretRef:
     name: github

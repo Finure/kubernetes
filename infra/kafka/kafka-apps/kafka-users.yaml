@@ -30,7 +30,7 @@ spec:
         host: "*"
       - resource:
           type: group
-          name: "finure-"
+          name: "finure"
           patternType: prefix
         operations:
           - Read

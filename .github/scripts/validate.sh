@@ -17,7 +17,11 @@ yq eval 'select(.kind == "HelmRepository") | .metadata.name + " " + .spec.url' \
   sort -u | \
   grep -vE '^---$' | \
   while read -r name url; do
-    helm repo add "$name" "$url"
+    if [[ "$url" == oci://* ]]; then
+      echo "Skipping OCI repo $name ($url)"
+    else
+      helm repo add "$name" "$url"
+    fi
   done
 
 helm repo update

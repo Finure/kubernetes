@@ -23,7 +23,7 @@ spec:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
       metadata:
-        generateName: app-backend-
+        generateName: app-
         namespace: tekton-pipelines
       spec:
         taskRunTemplate:

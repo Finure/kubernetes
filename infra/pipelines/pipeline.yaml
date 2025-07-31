@@ -1,0 +1,378 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: github-webhook-listener
+  namespace: tekton-pipelines
+spec:
+  serviceAccountName: tekton
+  triggers:
+    - name: github-pr-trigger
+      interceptors:
+        - name: "github"
+          ref:
+            name: "github"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: tekton-github
+                secretKey: secretToken
+            - name: "eventTypes"
+              value: ["pull_request"]
+        - name: cel
+          ref:
+            name: cel
+          params:
+            - name: filter
+              value: >
+                body.action in ['opened', 'synchronize', 'reopened'] &&
+                body.pull_request.head.ref.startsWith('feature/')
+      bindings:
+        - ref: github-pr-binding
+      template:
+        ref: pipeline-template
+    - name: github-push-trigger
+      interceptors:
+        - name: "github"
+          ref:
+            name: "github"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: tekton-github
+                secretKey: secretToken
+            - name: "eventTypes"
+              value: ["push"]
+        - name: cel
+          ref:
+            name: cel
+          params:
+            - name: filter
+              value: >
+                body.ref.startsWith('refs/heads/') &&
+                !body.ref.startsWith('refs/heads/feature/')
+      bindings:
+        - ref: github-push-binding
+      template:
+        ref: pipeline-template
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-pr-binding
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: url
+      value: $(body.pull_request.head.repo.clone_url)
+    - name: revision
+      value: $(body.pull_request.head.sha)
+    - name: git-branch
+      value: $(body.pull_request.head.ref)
+    - name: target-branch
+      value: $(body.pull_request.base.ref)
+    - name: repo-name
+      value: $(body.repository.name)
+    - name: repo-owner
+      value: $(body.repository.owner.login)
+    - name: repo-full-name
+      value: $(body.repository.full_name)
+    - name: pr-number
+      value: $(body.pull_request.number)
+    - name: event-type
+      value: "pull_request"
+    - name: pipeline-mode
+      value: "ci"
+    - name: pr-title
+      value: $(body.pull_request.title)
+    - name: pr-author
+      value: $(body.pull_request.user.login)
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-push-binding
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: url
+      value: $(body.repository.clone_url)
+    - name: revision
+      value: $(body.after)
+    - name: git-branch
+      value: $(body.ref)
+    - name: target-branch
+      value: $(body.ref)
+    - name: repo-name
+      value: $(body.repository.name)
+    - name: repo-owner
+      value: $(body.repository.owner.login)
+    - name: repo-full-name
+      value: $(body.repository.full_name)
+    - name: pr-number
+      value: ""
+    - name: event-type
+      value: "push"
+    - name: pipeline-mode
+      value: "cd"
+    - name: pr-title
+      value: ""
+    - name: pr-author
+      value: $(body.pusher.name)
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: pipeline
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: url
+      type: string
+    - name: revision
+      type: string
+    - name: git-branch
+      type: string
+    - name: target-branch
+      type: string
+    - name: repo-name
+      type: string
+    - name: repo-owner
+      type: string
+    - name: repo-full-name
+      type: string
+    - name: pr-number
+      type: string
+      default: ""
+    - name: event-type
+      type: string
+    - name: pipeline-mode
+      type: string
+    - name: pr-title
+      type: string
+      default: ""
+    - name: pr-author
+      type: string
+      default: ""
+    - name: registry-url
+      type: string
+      default: "ghcr.io"
+    - name: dockerfile-path
+      type: string
+      default: "./Dockerfile"
+    - name: lint-requirements-file
+      type: string
+      default: "app/requirements.txt"
+    - name: lint-path
+      type: string
+      default: "."
+
+  workspaces:
+    - name: shared-workspace
+    - name: github
+
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+        kind: Task
+      params:
+        - name: url
+          value: $(params.url)
+        - name: revision
+          value: $(params.revision)
+        - name: submodules
+          value: "true"
+        - name: depth
+          value: "1"
+        - name: deleteExisting
+          value: "true"
+        - name: verbose
+          value: "true"
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+        - name: github
+          workspace: github
+
+    - name: lint-code
+      taskRef:
+        name: flake8
+        kind: Task
+      params:
+        - name: path
+          value: $(params.lint-path)
+        - name: requirements_file
+          value: $(params.lint-requirements-file)
+        - name: args
+          value: ["--max-line-length=150"]
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+      runAfter:
+        - git-clone
+
+    - name: semver
+      taskRef:
+        name: semver
+        kind: Task
+      params:
+        - name: git-branch
+          value: $(params.git-branch)
+        - name: target-branch
+          value: $(params.target-branch)
+        - name: event-type
+          value: $(params.event-type)
+        - name: pipeline-mode
+          value: $(params.pipeline-mode)
+        - name: pr-number
+          value: $(params.pr-number)
+        - name: repo-name
+          value: $(params.repo-name)
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+        - name: github
+          workspace: github
+      runAfter:
+        - lint-code
+
+    - name: helm-path
+      taskRef:
+        name: helm-path
+        kind: Task
+      params:
+        - name: target-branch
+          value: $(params.target-branch)
+        - name: repo-name
+          value: $(params.repo-name)
+        - name: pipeline-mode
+          value: $(params.pipeline-mode)
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+      runAfter:
+        - semver
+      when:
+        - input: "$(params.pipeline-mode)"
+          operator: in
+          values: ["cd"]
+
+    - name: build-push-image
+      taskRef:
+        name: buildah
+        kind: Task
+      params:
+        - name: IMAGE
+          value: "$(params.registry-url)/$(params.repo-owner)/$(params.repo-name):$(tasks.determine-semantic-version.results.version)"
+        - name: DOCKERFILE
+          value: $(params.dockerfile-path)
+        - name: CONTEXT
+          value: .
+        - name: git-branch
+          value: $(params.git-branch)
+        - name: repo-name
+          value: $(params.repo-name)
+        - name: repo-owner
+          value: $(params.repo-owner)
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: tekton-github
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: token
+        - name: SHA
+          value: $(params.revision)
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+        - name: github
+          workspace: github
+      runAfter:
+        - helm-path
+      when:
+        - input: "$(params.pipeline-mode)"
+          operator: in
+          values: ["cd"]
+
+    - name: helm-update
+      taskRef:
+        name: helm-update
+        kind: Task
+      params:
+        - name: image-tag
+          value: "$(tasks.determine-semantic-version.results.version)"
+        - name: helm-chart-path
+          value: "$(tasks.dynamic-path-determiner.results.chart-file-path)"
+        - name: values-file-path
+          value: "$(tasks.dynamic-path-determiner.results.values-file-path)"
+        - name: git-branch
+          value: $(params.git-branch)
+        - name: repo-name
+          value: $(params.repo-name)
+        - name: repo-owner
+          value: $(params.repo-owner)
+        - name: event-type
+          value: $(params.event-type)
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+        - name: github
+          workspace: github
+      runAfter:
+        - build-push-image
+      when:
+        - input: "$(params.pipeline-mode)"
+          operator: in
+          values: ["cd"]
+  finally:
+    - name: report-pipeline-failed-to-github
+      when:
+        - input: $(tasks.status)
+          operator: in
+          values: [ "Failed", "None" ]
+      taskRef:
+        name: github-set-status
+      params:
+        - name: STATE
+          value: failed
+        - name: GITHUB_HOST_URL
+          value: "https://api.github.com"
+        - name: REPO_FULL_NAME
+          value: $(params.repo-full-name)
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: tekton-github
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: token
+        - name: SHA
+          value: $(params.revision)
+        - name: TARGET_URL
+          value: "https://tekton-dashboard.example.com/#/namespaces/default/pipelineruns/$(context.pipelineRun.name)"
+        - name: CONTEXT
+          value: tekton-pipeline
+        - name: DESCRIPTION
+          value: "An error occurred building your commit in Tekton"
+
+    - name: report-pipeline-success-to-github
+      when:
+        - input: $(tasks.status)
+          operator: in
+          values: [ "Succeeded", "Completed" ]
+      taskRef:
+        name: github-set-status
+      params:
+        - name: STATE
+          value: success
+        - name: GITHUB_HOST_URL
+          value: api.github.com
+        - name: REPO_FULL_NAME
+          value: $(params.repo-full-name)
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: tekton-github
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: token
+        - name: SHA
+          value: $(params.revision)
+        - name: TARGET_URL
+          value: "https://tekton-dashboard.example.com/#/namespaces/default/pipelineruns/$(context.pipelineRun.name)"
+        - name: CONTEXT
+          value: tekton-pipeline
+        - name: DESCRIPTION
+          value: "Finished building your commit in Tekton"

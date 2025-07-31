@@ -507,3 +507,22 @@ spec:
   prune: true
   dependsOn:
     - name: kafka-apps
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &appname tekton-pipelines
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/pipelines
+  wait: true
+  prune: true
+  dependsOn:
+    - name: tekton-workloads

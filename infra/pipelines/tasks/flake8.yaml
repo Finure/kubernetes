@@ -1,0 +1,45 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: flake8
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Code Quality
+    tekton.dev/tags: python, flake8, linter
+    tekton.dev/displayName: flake8
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    This task will run flake8 on the provided input.
+
+  workspaces:
+    - name: shared-workspace
+  params:
+    - name: image
+      description: The container image with flake8
+      default: docker.io/alpine/flake8:7.3.0
+    - name: path
+      description: The path to the module which should be analysed by flake8
+      default: "."
+      type: string
+    - name: requirements_file
+      description: The name of the requirements file inside the source location
+      default: "requirements.txt"
+    - name: args
+      description: The arguments to pass to the flake8 CLI.
+      type: array
+      default: []
+  steps:
+    - name: flake8
+      image: $(params.image)
+      workingDir: $(workspaces.shared-workspace.path)
+      script: |
+        export HOME=/tmp/python
+        export PATH=$PATH:/tmp/python/.local/bin
+        flake8 $@ $(params.path)
+      args:
+        - $(params.args)

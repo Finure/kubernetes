@@ -1,0 +1,188 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: helm-path
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: target-branch
+      type: string
+    - name: repo-name
+      type: string
+    - name: pipeline-mode
+      type: string
+  workspaces:
+    - name: shared-workspace
+  results:
+    - name: values-file-path
+    - name: chart-file-path
+    - name: environment-name
+  steps:
+    - name: determine-paths
+      image: alpine:latest
+      script: |
+        #!/bin/sh
+        set -e
+        apk add --no-cache git curl jq  
+        git config --global --add safe.directory "$(workspaces.shared-workspace.path)"
+        TARGET_BRANCH="$(params.target-branch)"
+        REPO_NAME="$(params.repo-name)"
+        PIPELINE_MODE="$(params.pipeline-mode)"
+        CLEAN_BRANCH=$(echo "$TARGET_BRANCH" | sed 's|refs/heads/||')
+
+        case "$CLEAN_BRANCH" in
+            main|master)
+                ENVIRONMENT="production"
+                ;;
+            *)
+                ENVIRONMENT="$CLEAN_BRANCH"
+                ;;
+        esac
+
+        VALUES_PATH="k8s/environments/$ENVIRONMENT/values.yaml"
+        CHART_PATH="k8s/helm-charts/$REPO_NAME/Chart.yaml"
+
+        echo "Environment: $ENVIRONMENT"
+        echo "Values path: $VALUES_PATH"
+        echo "Chart path: $CHART_PATH"
+
+        echo -n "$VALUES_PATH" > $(results.values-file-path.path)
+        echo "Wrote values path to: $(results.values-file-path.path)"
+        echo -n "$CHART_PATH" > $(results.chart-file-path.path)
+        echo "Wrote chart path to: $(results.chart-file-path.path)"
+        echo -n "$ENVIRONMENT" > $(results.environment-name.path)
+        echo "Wrote environment name to: $(results.environment-name.path)"
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: helm-update
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: image-tag
+      type: string
+    - name: helm-chart-path
+      type: string
+    - name: values-file-path
+      type: string
+    - name: git-branch
+      type: string
+    - name: repo-name
+      type: string
+    - name: repo-owner
+      type: string
+    - name: event-type
+      type: string
+  workspaces:
+    - name: shared-workspace
+    - name: github
+  steps:
+    - name: update-helm-files
+      image: alpine/git:latest
+      workingDir: $(workspaces.shared-workspace.path)
+      env:
+        - name: HOME
+          value: /tekton/home
+      script: |
+        #!/bin/sh
+        set -e
+        git config --global --add safe.directory "$(workspaces.shared-workspace.path)"
+        # Install required tools
+        apk add --no-cache curl
+        curl -L https://github.com/mikefarah/yq/releases/download/v4.35.2/yq_linux_amd64 -o /usr/local/bin/yq
+        chmod +x /usr/local/bin/yq
+        
+        # Configure git
+        git config --global user.email "tekton-pipeline@ci.local"
+        git config --global user.name "Tekton Pipeline"
+        git config --global --add safe.directory $(workspaces.shared-workspace.path)
+        
+        # Parameters
+        HELM_CHART_PATH="$(params.helm-chart-path)"
+        VALUES_FILE_PATH="$(params.values-file-path)"
+        IMAGE_TAG="$(params.image-tag)"
+        REPO_NAME="$(params.repo-name)"
+        REPO_OWNER="$(params.repo-owner)"
+        
+        echo "Repository: $REPO_OWNER/$REPO_NAME"
+        echo "Image Tag: $IMAGE_TAG"
+        echo "Chart Path: $HELM_CHART_PATH"
+        echo "Values Path: $VALUES_FILE_PATH"
+        
+        CHANGES_MADE=false
+        
+        # Update values.yaml if it exists
+        if [ -f "$VALUES_FILE_PATH" ]; then
+            echo "Updating values.yaml"
+            
+            # Check current tag value
+            CURRENT_TAG=$(yq eval '.image.tag' "$VALUES_FILE_PATH" 2>/dev/null || echo "not found")
+            echo "Current tag: $CURRENT_TAG"
+            
+            # Update the tag
+            yq eval '.image.tag = "'"$IMAGE_TAG"'"' -i "$VALUES_FILE_PATH"
+            
+            # Verify the update
+            NEW_TAG=$(yq eval '.image.tag' "$VALUES_FILE_PATH" 2>/dev/null || echo "failed")
+            if [ "$NEW_TAG" = "$IMAGE_TAG" ]; then
+                CHANGES_MADE=true
+                echo "Image tag successfully updated to: $IMAGE_TAG"
+            else
+                echo "Failed to update image tag"
+                exit 1
+            fi
+        else
+            echo "Values.yaml not found at: $VALUES_FILE_PATH"
+            CHANGES_MADE=false
+        fi
+        if [ -f "$HELM_CHART_PATH" ]; then
+            echo "Updating Chart.yaml"
+
+            # Check current version
+            CURRENT_VERSION=$(yq eval '.version' "$HELM_CHART_PATH" 2>/dev/null || echo "not found")
+            echo "Current version: $CURRENT_VERSION"
+
+            # Update the version to IMAGE_TAG
+            yq eval '.version = "'"$IMAGE_TAG"'"' -i "$HELM_CHART_PATH"
+
+            # Verify the update
+            NEW_VERSION=$(yq eval '.version' "$HELM_CHART_PATH" 2>/dev/null || echo "failed")
+            if [ "$NEW_VERSION" = "$IMAGE_TAG" ]; then
+                CHANGES_MADE=true
+                echo "Chart version successfully updated to: $IMAGE_TAG"
+            else
+                echo "Failed to update chart version"
+                exit 1
+            fi
+        else
+            echo "Chart.yaml not found at: $HELM_CHART_PATH"
+            CHANGES_MADE=false
+        fi
+        # Check if there are any changes to commit
+        if [ "$CHANGES_MADE" = "false" ] || git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+        fi
+        
+        # Show changes
+        echo "CHANGES TO COMMIT:"
+        git diff --name-only
+        git diff
+        
+        # Commit and push changes
+        git add .
+        git commit -m "chore(helm): update $REPO_NAME to $IMAGE_TAG
+
+        - Updated Chart.yaml version and appVersion
+        - Updated values.yaml image.tag
+        - Automated by Tekton Pipeline
+        
+        [skip ci]"
+        
+        # Push to the same branch
+        BRANCH_NAME=$(echo "$(params.git-branch)" | sed 's|refs/heads/||')
+        echo "Pushing changes to branch: $BRANCH_NAME"
+        git push origin HEAD:$BRANCH_NAME
+        

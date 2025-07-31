@@ -263,7 +263,7 @@ spec:
         kind: Task
       params:
         - name: IMAGE
-          value: "$(params.registry-url)/$(params.repo-owner)/$(params.repo-name):$(tasks.determine-semantic-version.results.version)"
+          value: "$(params.registry-url)/$(params.repo-owner)/$(params.repo-name):$(tasks.semver.results.version)"
         - name: DOCKERFILE
           value: $(params.dockerfile-path)
         - name: CONTEXT
@@ -298,11 +298,11 @@ spec:
         kind: Task
       params:
         - name: image-tag
-          value: "$(tasks.determine-semantic-version.results.version)"
+          value: "$(tasks.semver.results.version)"
         - name: helm-chart-path
-          value: "$(tasks.dynamic-path-determiner.results.chart-file-path)"
+          value: "$(tasks.helm-path.results.chart-file-path)"
         - name: values-file-path
-          value: "$(tasks.dynamic-path-determiner.results.values-file-path)"
+          value: "$(tasks.helm-path.results.values-file-path)"
         - name: git-branch
           value: $(params.git-branch)
         - name: repo-name

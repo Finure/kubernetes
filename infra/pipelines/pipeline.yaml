@@ -49,7 +49,8 @@ spec:
             - name: filter
               value: >
                 body.ref.startsWith('refs/heads/') &&
-                !body.ref.startsWith('refs/heads/feature/')
+                !body.ref.startsWith('refs/heads/feature/') &&
+                !body.commits.exists(c, c.author.email == 'tekton-pipeline@ci.local')
       bindings:
         - ref: github-push-binding
       template:
@@ -327,7 +328,7 @@ spec:
       when:
         - input: $(tasks.status)
           operator: in
-          values: [ "Failed", "None" ]
+          values: ["Failed", "None"]
       taskRef:
         name: github-set-status
       params:
@@ -354,7 +355,7 @@ spec:
       when:
         - input: $(tasks.status)
           operator: in
-          values: [ "Succeeded", "Completed" ]
+          values: ["Succeeded", "Completed"]
       taskRef:
         name: github-set-status
       params:

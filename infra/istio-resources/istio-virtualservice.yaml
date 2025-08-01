@@ -161,19 +161,19 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: tekton-webhook
-  namespace: tekton-pipelines
+  name: app-frontend
+  namespace: ai
 spec:
   hosts:
-  - "tekton-webhook.clokesh.me"
+  - "finure.clokesh.me"
   gateways:
-  - tekton-gateway
+  - ai-gateway
   http:
   - match:
     - uri:
         prefix: /
     route:
     - destination:
-        host: el-github-webhook-listener.tekton-pipelines.svc.cluster.local
+        host: app-frontend.ai.svc.cluster.local
         port:
-          number: 8080
+          number: 80

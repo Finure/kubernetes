@@ -47,6 +47,7 @@ spec:
         git fetch origin main --tags
         LATEST_TAG=$(git tag --sort=-creatordate | head -n1)
         echo "LATEST: $LATEST_TAG"
+
         if [ -z "$LATEST_TAG" ]; then
             # No tag exists - use 1.0.0
             NEW_VERSION="1.0.0"
@@ -58,69 +59,76 @@ spec:
         else
             echo "Latest version: $LATEST_TAG"
             
-        MERGE_BASE=$(git merge-base "$LATEST_TAG" HEAD)
+            MERGE_BASE=$(git merge-base "$LATEST_TAG" HEAD)
 
-        if [ -z "$MERGE_BASE" ]; then
-            echo "Warning: No common ancestor found"
-            # Fallback to linear log (may miss commits inside merges)
-            MERGE_COMMIT=$(git log "$LATEST_TAG"..HEAD --pretty=format:"%s" --no-merges)
-        else
-            # Recommended full graph walk
-            MERGE_COMMIT=$(git log "$MERGE_BASE"..HEAD --pretty=format:"%s" --no-merges)
-        fi
-        echo "$MERGE_COMMIT"
+            if [ -z "$MERGE_BASE" ]; then
+                echo "Warning: No common ancestor found"
+                # Fallback to linear log (may miss commits inside merges)
+                MERGE_COMMIT=$(git log "$LATEST_TAG"..HEAD --pretty=format:"%s" --no-merges)
+            else
+                # Recommended full graph walk
+                MERGE_COMMIT=$(git log "$MERGE_BASE"..HEAD --pretty=format:"%s" --no-merges)
+            fi
+            
+            echo "$MERGE_COMMIT"
 
             if [ -n "$MERGE_COMMIT" ]; then
                 major_count=$(echo "$MERGE_COMMIT" | grep -E "(BREAKING CHANGE|!)" | wc -l)
                 minor_count=$(echo "$MERGE_COMMIT" | grep -E "^feat" | wc -l)
                 patch_count=$(echo "$MERGE_COMMIT" | grep -E "^fix" | wc -l)
+                
+                # Parse latest tag version
                 IFS='.' read -r major minor patch <<EOF
-            $LATEST_TAG
-            EOF
+        $LATEST_TAG
+        EOF
+                
                 # Determine bump type
                 BUMP_TYPE=""
-                if echo "$MERGE_COMMIT" | grep "(BREAKING CHANGE|!)"; then
+                if echo "$MERGE_COMMIT" | grep -q "(BREAKING CHANGE|!)"; then
                     BUMP_TYPE="major"
-                elif echo "$MERGE_COMMIT" | grep "feat"; then
+                elif echo "$MERGE_COMMIT" | grep -q "feat"; then
                     BUMP_TYPE="minor"
-                elif echo "$MERGE_COMMIT" | grep "fix"; then
+                elif echo "$MERGE_COMMIT" | grep -q "fix"; then
                     BUMP_TYPE="patch"
                 fi
                 
                 if [ -n "$BUMP_TYPE" ]; then
                     # Calculate new version
-                    IFS='.' read -r major minor patch << EOF
+                    if [ "$major_count" -gt 0 ]; then
+                        # Breaking change resets minor/patch
+                        new_major=$((major + 1))
+                        new_minor=0
+                        new_patch=0
+                        BUMP_TYPE="major"
+                    else
+                        new_major=$major
+                        new_minor=$((minor + minor_count))
+                        new_patch=$((patch + patch_count))
+
+                        if [ "$minor_count" -gt 0 ]; then
+                            BUMP_TYPE="minor"
+                        elif [ "$patch_count" -gt 0 ]; then
+                            BUMP_TYPE="patch"
+                        else
+                            # Force patch bump if nothing matched
+                            new_patch=$((patch + 1))
+                            BUMP_TYPE="patch"
+                        fi
+                    fi
+
+                    NEW_VERSION="${new_major}.${new_minor}.${new_patch}"
+                    echo "Bump type: $BUMP_TYPE"
+                else
+                    # No commits since last tag, force patch bump
+                    NEW_VERSION="$major.$minor.$((patch + 1))"
+                    BUMP_TYPE="patch"
+                    echo "No commits since last tag, minimum patch bump"
+                fi
+            else
+                # No commits found, force patch bump
+                IFS='.' read -r major minor patch <<EOF
         $LATEST_TAG
         EOF
-                if [ "$major_count" -gt 0 ]; then
-                    # Breaking change resets minor/patch
-                    new_major=$((major + 1))
-                    new_minor=0
-                    new_patch=0
-                    BUMP_TYPE="major"
-                else
-                    new_major=$major
-                    new_minor=$((minor + minor_count))
-                    new_patch=$((patch + patch_count))
-
-                    if [ "$minor_count" -gt 0 ]; then
-                        BUMP_TYPE="minor"
-                    elif [ "$patch_count" -gt 0 ]; then
-                        BUMP_TYPE="patch"
-                    else
-                        # Force patch bump if nothing matched
-                        new_patch=$((patch + 1))
-                        BUMP_TYPE="patch"
-                    fi
-                fi
-
-                NEW_VERSION="${new_major}.${new_minor}.${new_patch}"
-                echo "Bump type: $BUMP_TYPE"
-            else
-                # No commits since last tag, force patch bump
-                IFS='.' read -r major minor patch <<EOF
-            $LATEST_TAG
-            EOF
                 NEW_VERSION="$major.$minor.$((patch + 1))"
                 BUMP_TYPE="patch"
                 echo "No commits since last tag, minimum patch bump"
@@ -130,5 +138,5 @@ spec:
         echo "Final version: $NEW_VERSION"
 
         # Write results
-        echo -n "$NEW_VERSION" > $(results.version.path)
-        echo -n "$BUMP_TYPE" > $(results.version-type.path)
+        echo -n "$NEW_VERSION" > "$(results.version.path)"
+        echo -n "$BUMP_TYPE" > "$(results.version-type.path)"

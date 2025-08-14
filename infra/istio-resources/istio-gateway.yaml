@@ -97,3 +97,4 @@ spec:
       protocol: HTTP
     hosts:
     - "finure.clokesh.me"
+    - "api-finure.clokesh.me"

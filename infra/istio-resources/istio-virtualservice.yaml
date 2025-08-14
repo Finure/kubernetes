@@ -201,7 +201,7 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: app-frontend
+  name: api-finure
   namespace: ai
 spec:
   hosts:

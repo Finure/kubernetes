@@ -1,0 +1,13 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: app-gateway
+  namespace: ai
+spec:
+  chart:
+    spec:
+      valuesFiles:
+        - k8s/environments/production/values.yaml
+      sourceRef:
+        kind: GitRepository
+        name: app-gateway

@@ -1,0 +1,64 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: airflow
+    namespace: airflow
+spec:
+    chart:
+        spec:
+            chart: airflow
+            version: 1.18.0
+            sourceRef:
+                kind: HelmRepository
+                name: airflow
+                namespace: airflow
+    interval: 1h0m0s
+    values:
+      scheduler:
+        serviceAccount:
+          create: false
+          name: airflow
+      workers:
+        serviceAccount:
+          create: true
+          name: airflow
+          annotations:
+            iam.gke.io/gcp-service-account: "airflow@finure-465001.iam.gserviceaccount.com"
+      createUserJob:
+        useHelmHooks: false
+        applyCustomEnv: false
+      migrateDatabaseJob:
+        useHelmHooks: false
+        applyCustomEnv: false
+      useStandardNaming: true
+      extraSecrets:
+        '{{ .Release.Name }}-example':
+          useHelmHooks: false
+          data: |
+            AIRFLOW_VAR_HELLO_MESSAGE: "Hi!"
+
+      extraConfigMaps:
+        '{{ .Release.Name }}-example':
+          useHelmHooks: false
+          data: |
+            AIRFLOW_VAR_HELLO_MESSAGE: "Hi!"
+          workers:
+            persistence:
+              enabled: false
+      extraEnvFrom: |
+        - secretRef:
+            name: 'airflow'
+      gitSync:
+        enabled: true
+        repo: https://github.com/Finure/airflow
+        branch: main
+        rev: HEAD
+        ref: main
+        subPath: ""
+        credentialsSecret: airflow-github
+      pgbouncer:
+        enabled: false
+      webserver:
+        allowPodLogReading: false
+      apiServer:
+        allowPodLogReading: false

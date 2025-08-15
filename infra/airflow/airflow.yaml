@@ -24,6 +24,8 @@ spec:
           name: airflow
           annotations:
             iam.gke.io/gcp-service-account: "airflow@finure-465001.iam.gserviceaccount.com"
+        persistence:
+          enabled: false
       createUserJob:
         useHelmHooks: false
         applyCustomEnv: false
@@ -42,20 +44,18 @@ spec:
           useHelmHooks: false
           data: |
             AIRFLOW_VAR_HELLO_MESSAGE: "Hi!"
-          workers:
-            persistence:
-              enabled: false
       extraEnvFrom: |
         - secretRef:
             name: 'airflow'
-      gitSync:
-        enabled: true
-        repo: https://github.com/Finure/airflow
-        branch: main
-        rev: HEAD
-        ref: main
-        subPath: ""
-        credentialsSecret: airflow-github
+      dags:
+        gitSync:
+          enabled: true
+          repo: https://github.com/Finure/airflow
+          branch: main
+          rev: HEAD
+          ref: main
+          subPath: ""
+          credentialsSecret: airflow
       pgbouncer:
         enabled: false
       webserver:

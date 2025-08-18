@@ -217,3 +217,23 @@ spec:
         host: app-gateway.ai.svc.cluster.local
         port:
           number: 5000
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: airflow
+  namespace: airflow
+spec:
+  hosts:
+  - "airflow.clokesh.me"
+  gateways:
+  - airflow
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: airflow-api-server.airflow.svc.cluster.local
+        port:
+          number: 8080

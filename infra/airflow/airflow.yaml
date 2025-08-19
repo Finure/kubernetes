@@ -1,0 +1,80 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: airflow
+  namespace: airflow
+spec:
+  chart:
+    spec:
+      chart: airflow
+      version: 1.18.0
+      sourceRef:
+        kind: HelmRepository
+        name: airflow
+        namespace: airflow
+  interval: 1h0m0s
+  values:
+    airflowVersion: "3.0.4"
+    defaultAirflowTag: "3.0.4"
+    scheduler:
+      serviceAccount:
+        create: false
+        name: airflow
+    workers:
+      serviceAccount:
+        create: true
+        name: airflow
+        annotations:
+          iam.gke.io/gcp-service-account: "airflow@finure-465001.iam.gserviceaccount.com"
+      persistence:
+        enabled: true
+        size: 5Gi
+      volumeClaimTemplates:
+        - metadata:
+            name: shared-volume
+          spec:
+            storageClassName: "standard-rwo"
+            accessModes:
+              - "ReadWriteOnce"                   
+            resources:
+              requests:
+                storage: "12Gi"
+      extraVolumeMounts:
+        - name: shared-volume
+          mountPath: /shared
+      securityContext:
+        fsGroup: 1000
+    triggerer:
+      persistence:
+        enabled: true
+        size: 5Gi
+    createUserJob:
+      useHelmHooks: false
+      applyCustomEnv: false
+    migrateDatabaseJob:
+      useHelmHooks: false
+      applyCustomEnv: false
+    useStandardNaming: true
+    extraSecrets:
+      "{{ .Release.Name }}-example":
+        useHelmHooks: false
+        data: |
+          AIRFLOW_VAR_HELLO_MESSAGE: "Hi!"
+
+    extraConfigMaps:
+      "{{ .Release.Name }}-example":
+        useHelmHooks: false
+        data: |
+          AIRFLOW_VAR_HELLO_MESSAGE: "Hi!"
+    extraEnvFrom: |
+      - secretRef:
+          name: 'airflow'
+    dags:
+      gitSync:
+        enabled: true
+        repo: https://github.com/Finure/airflow
+        branch: main
+        rev: HEAD
+        ref: main
+        subPath: ""
+        credentialsSecret: airflow

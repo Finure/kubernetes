@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: model-training
+  namespace: argo
+spec:
+  template:
+    serviceAccountName: events-sa    
+  dependencies:
+    - name: dep
+      eventSourceName: airflow-webhook
+      eventName: airflow-webhook
+  triggers:
+    - template:
+        name: trigger
+        k8s:
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: model-training-
+              spec:
+                serviceAccountName: argo-workflows
+                entrypoint: train
+                imagePullSecrets:
+                  - name: ghcr 
+                arguments:
+                  parameters:
+                    - name: bucket
+                    - name: outfile
+                templates:
+                  - name: train
+                    inputs:
+                      parameters:
+                        - name: bucket
+                        - name: outfile
+                    container:
+                      image: ghcr.io/finure/ai-workflow:1.0.0
+                      env:
+                        - name: BUCKET
+                          value: "{{inputs.parameters.bucket}}"
+                        - name: OUTFILE
+                          value: "{{inputs.parameters.outfile}}"
+          parameters:
+            - src:
+                dependencyName: dep
+                dataKey: body.bucket
+              dest: spec.arguments.parameters.0.value
+            - src:
+                dependencyName: dep
+                dataKey: body.outfile
+              dest: spec.arguments.parameters.1.value

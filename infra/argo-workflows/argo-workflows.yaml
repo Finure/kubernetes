@@ -1,0 +1,41 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: argo-workflows
+  namespace: argo
+spec:
+  chart:
+    spec:
+      chart: argo-workflows
+      version: 0.45.20
+      sourceRef:
+        kind: HelmRepository
+        name: argo
+        namespace: argo
+  interval: 1h0m0s
+  values:
+    controller:
+      telemetryConfig:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+      workflowNamespaces:
+        - argo
+      serviceAccount:
+        create: false
+        name: "argo-workflows"
+      rbac:
+        accessAllSecrets: trye
+    workflow:
+      serviceAccount:
+        create: true
+        name: "argo-workflows"
+        annotations:
+          iam.gke.io/gcp-service-account: argo-workflows@finure-465001.iam.gserviceaccount.com
+    useStaticCredentials: false
+    artifactRepository:
+      gcs:
+        bucket: finure-argo
+    server:
+      authModes:
+        - server # Cloudflare handles security

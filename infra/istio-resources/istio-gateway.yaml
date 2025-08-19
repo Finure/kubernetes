@@ -114,3 +114,19 @@ spec:
       protocol: HTTP
     hosts:
     - "airflow.clokesh.me"
+---
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: argo
+  namespace: argo
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "argowf.clokesh.me"

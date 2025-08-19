@@ -237,3 +237,23 @@ spec:
         host: airflow-api-server.airflow.svc.cluster.local
         port:
           number: 8080
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: argowf
+  namespace: argo
+spec:
+  hosts:
+  - "argowf.clokesh.me"
+  gateways:
+  - argo
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: argo-workflows-server.argo.svc.cluster.local
+        port:
+          number: 2746

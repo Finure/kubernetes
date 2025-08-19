@@ -30,5 +30,6 @@ spec:
       artifactRepository:
         gcs:
           bucket: finure-argo
-      authModes:
-        - server # Cloudflare handles security
+      server:
+        authModes:
+          - server # Cloudflare handles security

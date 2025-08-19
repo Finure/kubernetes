@@ -98,3 +98,19 @@ spec:
     hosts:
     - "finure.clokesh.me"
     - "api-finure.clokesh.me"
+---
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: airflow
+  namespace: airflow
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "airflow.clokesh.me"

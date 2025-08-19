@@ -144,3 +144,12 @@ spec:
   interval: 1h0m0s
   url: oci://quay.io/strimzi-helm
   type: "oci"
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: airflow
+  namespace: airflow
+spec:
+  interval: 1h0m0s
+  url: https://airflow.apache.org

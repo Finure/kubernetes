@@ -1,0 +1,18 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: finure-ai
+  namespace: kserve
+spec:
+  predictor:
+    minReplicas: 0
+    maxReplicas: 5
+    serviceAccountName: kserve
+    annotations:
+      autoscaling.knative.dev/metric: concurrency
+      autoscaling.knative.dev/target: "100"
+      autoscaling.knative.dev/scale-to-zero-grace-period: "60s"
+      autoscaling.knative.dev/window: "600s"
+    sklearn:
+      storageUri: gs://finure-models/models
+      image: kserve/sklearnserver:v0.15.2

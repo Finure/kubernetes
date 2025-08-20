@@ -153,3 +153,22 @@ metadata:
 spec:
   interval: 1h0m0s
   url: https://airflow.apache.org
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: knative
+  namespace: knative
+spec:
+  interval: 1h0m0s
+  url: https://knative.github.io/operator
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: kserve
+  namespace: kserve
+spec:
+  interval: 1h0m0s
+  url: oci://ghcr.io/kserve/charts
+  type: "oci"

@@ -1,0 +1,96 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: velero
+    namespace: velero
+spec:
+    chart:
+        spec:
+            chart: velero
+            version: 10.1.0
+            sourceRef:
+                kind: HelmRepository
+                name: velero
+                namespace: velero
+    interval: 1h0m0s
+    values:
+      serviceAccount:
+        server:
+          create: true
+          name: velero
+          annotations:
+            iam.gke.io/gcp-service-account: velero@finure-465001.iam.gserviceaccount.com
+      credentials:
+        useSecret: false
+      metrics:
+        serviceMonitor:
+          enabled: true
+      configuration:
+        backupStorageLocation:
+          - name: gcs
+            bucket: finure-velero
+            provider: gcp
+            default: true
+            config:
+              serviceAccount: "velero@finure-465001.iam.gserviceaccount.com"
+      snapshotsEnabled: false
+      initContainers:
+        - name: velero-plugin-for-gcp
+          image: velero/velero-plugin-for-gcp:v1.12.0
+          volumeMounts:
+            - mountPath: /target
+              name: plugins
+      schedules:
+        cluster:
+          paused: false
+          storageLocation: finure-velero
+          includeClusterResources: true
+          labels:
+            referency: cluster
+          schedule: "*/15 * * * *"
+          useOwnerReferencesInBackup: false
+          template:
+            ttl: "168h"
+            excludedNamespaces:
+              - kube-system
+              - kube-node-lease
+              - kube-public
+              - flux-system
+              - velero
+            includedNamespaces:
+              - "*"
+            excludedResources:
+              - pvc
+              - pv
+              - pod
+              - job
+              - replicaset
+        flux:
+          paused: false
+          schedule: "*/15 * * * *"
+          useOwnerReferencesInBackup: false
+          template:
+            ttl: "168h"
+            storageLocation: finure-velero
+            includedNamespaces:
+              - flux-system
+            excludedResources:
+              - pvc
+              - pv
+              - pod
+              - replicaset
+        velero:
+          paused: false
+          schedule: "*/15 * * * *"
+          useOwnerReferencesInBackup: false
+          template:
+            includeClusterResources: true
+            ttl: "168h"
+            storageLocation: finure-velero
+            includedNamespaces:
+              - velero
+            excludedResources:
+              - pvc
+              - pv
+              - pod
+              - replicaset

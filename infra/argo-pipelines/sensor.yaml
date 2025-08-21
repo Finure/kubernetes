@@ -37,7 +37,7 @@ spec:
                         - name: bucket
                         - name: outfile
                     container:
-                      image: ghcr.io/finure/ai-workflow:1.0.1
+                      image: ghcr.io/finure/ai-workflow:1.0.2
                       env:
                         - name: BUCKET
                           value: "{{inputs.parameters.bucket}}"

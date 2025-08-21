@@ -172,3 +172,12 @@ spec:
   interval: 1h0m0s
   url: oci://ghcr.io/kserve/charts
   type: "oci"
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: velero
+  namespace: velero
+spec:
+  interval: 1h0m0s
+  url: https://vmware-tanzu.github.io/helm-charts

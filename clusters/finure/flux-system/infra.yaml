@@ -676,3 +676,22 @@ spec:
   prune: true
   dependsOn:
     - name: kserve-resources
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &appname velero
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/velero
+  wait: true
+  prune: true
+  dependsOn:
+    - name: secrets

@@ -58,7 +58,8 @@ spec:
             tar xvf ./db.tar.gz -C "$HOME"/.cache/trivy/db
             cmd="${cmd}--skip-update "
           fi
-          cmd="${cmd}$(params.IMAGE_PATH)"
+          image_name="$(echo "$(params.IMAGE_PATH)" | tr '[:upper:]' '[:lower:]')"
+          cmd="${cmd}${image_name}"
           echo "Running trivy task with command below"
           echo "$cmd"
           eval "$cmd"

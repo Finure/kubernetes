@@ -61,5 +61,7 @@ spec:
           echo "Running trivy task with command below"
           echo "$cmd"
           eval "$cmd"
+          rc=$?
+          sleep infinity
       args:
         - "$(params.ARGS)"

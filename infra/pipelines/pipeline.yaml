@@ -300,6 +300,9 @@ spec:
       params:
         - name: IMAGE_PATH
           value: "$(params.registry-url)/$(params.repo-owner)/$(params.repo-name):$(tasks.semver.results.version)"
+        - name: ARGS
+          value:
+            - "--severity=HIGH,CRITICAL"
       workspaces:
         - name: shared-workspace
           workspace: shared-workspace

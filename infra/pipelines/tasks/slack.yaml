@@ -43,7 +43,7 @@ spec:
   - name: status
     type: string
   - name: message
-    value: |
+    default: |
       Rep: $(params.repo-name)
       Version: $(tasks.semver.results.version)
       Branch: $(params.target-branch)

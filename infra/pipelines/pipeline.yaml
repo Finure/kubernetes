@@ -302,7 +302,7 @@ spec:
           value: "$(params.registry-url)/$(params.repo-owner)/$(params.repo-name):$(tasks.semver.results.version)"
         - name: ARGS
           value:
-            - "--severity=HIGH,CRITICAL"
+            - "image"
       workspaces:
         - name: shared-workspace
           workspace: shared-workspace

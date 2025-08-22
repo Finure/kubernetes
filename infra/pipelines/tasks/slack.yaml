@@ -1,0 +1,64 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: slack
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Messaging
+    tekton.dev/tags: messaging
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    These tasks post a simple message to a slack channel.
+
+    This task uses chat.postMessage slack REST api to send the message.
+    There are multiple ways to send a message to slack.
+  workspaces:
+    - name: shared-workspace
+      description: Source code context including Dockerfile.
+    - name: github
+      description: Optional workspace to provide .docker/config.json for registry auth.
+  params:
+  - name: token-secret
+    type: string
+    description: secret name of the slack app access token (key is token)
+    default: tekton-github
+  - name: channel
+    type: string
+    description: channel id or channel name
+    default: "tekton"
+  - name: repo
+    type: string
+  - name: version
+    type: string
+  - name: branch
+    type: string
+  - name: pr-number
+    type: string
+  - name: pipeline-mode
+    type: string
+  - name: status
+    type: string
+  - name: message
+    value: |
+      Rep: $(params.repo-name)
+      Version: $(tasks.semver.results.version)
+      Branch: $(params.target-branch)
+      PR: $(params.pr-number)
+      Mode: $(params.pipeline-mode)
+      Status: $(tasks.status)
+  steps:
+  - name: post
+    image: docker.io/curlimages/curl:8.15.0@sha256:4026b29997dc7c823b51c164b71e2b51e0fd95cce4601f78202c513d97da2922 #tag 8.15.0
+    script: |
+      #!/bin/sh
+      /usr/bin/curl -X POST -H 'Content-type: application/json' -H 'Authorization: Bearer '$TOKEN --data '{"channel":"$(params.channel)", "text":"$(params.message)"}' https://slack.com/api/chat.postMessage
+    env:
+    - name: TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: $(params.token-secret)
+          key: slack-token

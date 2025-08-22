@@ -417,6 +417,8 @@ spec:
           value: $(params.pipeline-mode)
         - name: status
           value: $(tasks.status)
+        - name: commit
+          value: $(params.revision)
       workspaces:
         - name: shared-workspace
           workspace: shared-workspace

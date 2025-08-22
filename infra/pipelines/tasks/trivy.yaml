@@ -21,7 +21,12 @@ spec:
     This task can be used to scan for vulnenrabilities on the source code
     in stand alone mode.
   workspaces:
-    - name: manifest-dir
+    - name: shared-workspace
+      description: Source code context including Dockerfile.
+    - name: sslcertdir
+      optional: true
+    - name: github
+      description: Optional workspace to provide .docker/config.json for registry auth.
   params:
     - name: ARGS
       description: The Arguments to be passed to Trivy command.
@@ -39,7 +44,7 @@ spec:
   steps:
     - name: trivy-scan
       image: $(params.TRIVY_IMAGE)
-      workingDir: $(workspaces.manifest-dir.path)
+      workingDir: $(workspaces.shared-workspace.path)
       script: |
         #!/usr/bin/env sh
           cmd="trivy $* "

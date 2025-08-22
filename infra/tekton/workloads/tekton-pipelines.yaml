@@ -6,6 +6,8 @@ metadata:
   namespace: tekton-pipelines
 secrets:
   - name: tekton-github
+imagePullSecrets:
+  - name: ghcr
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

@@ -256,7 +256,7 @@ spec:
       when:
         - input: "$(params.pipeline-mode)"
           operator: in
-          values: ["cd"]
+          values: ["ci"]
 
     - name: build-push-image
       taskRef:
@@ -291,7 +291,26 @@ spec:
       when:
         - input: "$(params.pipeline-mode)"
           operator: in
-          values: ["cd"]
+          values: ["ci"]
+
+    - name: trivy-scanner
+      taskRef:
+        name: trivy-scanner
+        kind: Task
+      params:
+        - name: IMAGE_PATH
+          value: "$(params.registry-url)/$(params.repo-owner)/$(params.repo-name):$(tasks.semver.results.version)"
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+        - name: github
+          workspace: github
+      runAfter:
+        - build-push-image
+      when:
+        - input: "$(params.pipeline-mode)"
+          operator: in
+          values: ["ci"]
 
     - name: helm-update
       taskRef:
@@ -318,11 +337,11 @@ spec:
         - name: github
           workspace: github
       runAfter:
-        - build-push-image
+        - trivy-scanner
       when:
         - input: "$(params.pipeline-mode)"
           operator: in
-          values: ["cd"]
+          values: ["ci"]
   finally:
     - name: report-pipeline-failed-to-github
       when:

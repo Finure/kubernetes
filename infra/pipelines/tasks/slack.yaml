@@ -29,7 +29,7 @@ spec:
   - name: channel
     type: string
     description: channel id or channel name
-    default: "tekton"
+    default: "#tekton"
   - name: repo
     type: string
   - name: version
@@ -55,7 +55,7 @@ spec:
     image: docker.io/curlimages/curl:8.15.0@sha256:4026b29997dc7c823b51c164b71e2b51e0fd95cce4601f78202c513d97da2922 #tag 8.15.0
     script: |
       #!/bin/sh
-      /usr/bin/curl -X POST -H 'Content-type: application/json' -H 'Authorization: Bearer '$TOKEN --data '{"channel":"$(params.channel)", "text":"$(params.message)"}' https://slack.com/api/chat.postMessage
+      /usr/bin/curl -X POST -H 'Content-Type: application/json; charset=utf-8' -H 'Authorization: Bearer '$TOKEN --data '{"channel":"$(params.channel)", "text":"$(params.message)"}' https://slack.com/api/chat.postMessage
     env:
     - name: TOKEN
       valueFrom:

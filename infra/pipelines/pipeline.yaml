@@ -258,33 +258,6 @@ spec:
           operator: in
           values: ["ci"]
 
-    - name: slack
-      taskRef:
-        name: slack
-        kind: Task
-      params:
-        - name: repo
-          value: $(params.repo-name)
-        - name: version
-          value: $(tasks.semver.results.version)
-        - name: branch
-          value: $(params.target-branch)
-        - name: pr-number
-          value: $(params.pr-number)
-        - name: pipeline-mode
-          value: $(params.pipeline-mode)
-        - name: status
-          value: $(tasks.status)
-      workspaces:
-        - name: shared-workspace
-          workspace: shared-workspace
-        - name: github
-          workspace: github
-      when:
-        - input: $(tasks.status)
-          operator: in
-          values: ["Failed", "None", "Succeeded", "Completed"]
-
     - name: build-push-image
       taskRef:
         name: buildah
@@ -426,3 +399,30 @@ spec:
           value: tekton-pipeline
         - name: DESCRIPTION
           value: "Finished building your commit in Tekton"
+
+    - name: slack
+      taskRef:
+        name: slack
+        kind: Task
+      params:
+        - name: repo
+          value: $(params.repo-name)
+        - name: version
+          value: $(tasks.semver.results.version)
+        - name: branch
+          value: $(params.target-branch)
+        - name: pr-number
+          value: $(params.pr-number)
+        - name: pipeline-mode
+          value: $(params.pipeline-mode)
+        - name: status
+          value: $(tasks.status)
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+        - name: github
+          workspace: github
+      when:
+        - input: $(tasks.status)
+          operator: in
+          values: ["Failed", "None", "Succeeded", "Completed"]

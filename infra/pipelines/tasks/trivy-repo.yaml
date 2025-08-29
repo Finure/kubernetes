@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: trivy-scanner
+  name: trivy-repo-scanner
   namespace: tekton-pipelines
   labels:
     app.kubernetes.io/version: "0.2"
@@ -32,16 +32,22 @@ spec:
     - name: TRIVY_IMAGE
       default: docker.io/aquasec/trivy@sha256:a22415a38938a56c379387a8163fcb0ce38b10ace73e593475d3658d578b2436 # 0.65.0
       description: Trivy scanner image to be used
-    - name: IMAGE_PATH
-      description: Image or Path to be scanned by trivy.
+    - name: REPO_URL
+      description: Repo to be scanned by trivy.
       type: string
     - name: AIR_GAPPED_ENABLED
       default: "false"
       description: a flag enabling Air-Gapped mode
       type: string
   steps:
-    - name: trivy-scan
+    - name: trivy-repo-scan
       image: $(params.TRIVY_IMAGE)
+      env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: tekton-github
+              key: GITHUB_TOKEN
       workingDir: $(workspaces.shared-workspace.path)
       script: |
         #!/usr/bin/env sh
@@ -56,8 +62,8 @@ spec:
             tar xvf ./db.tar.gz -C "$HOME"/.cache/trivy/db
             cmd="${cmd}--skip-update "
           fi
-          image_name="$(echo "$(params.IMAGE_PATH)" | tr '[:upper:]' '[:lower:]')"
-          cmd="${cmd}${image_name}"
+          repo="$(echo "$(params.REPO_URL)" | tr '[:upper:]' '[:lower:]')"
+          cmd="${cmd}${repo}"
           echo "Running trivy task with command below"
           echo "$cmd"
           eval "$cmd"

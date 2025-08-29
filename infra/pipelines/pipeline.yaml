@@ -212,6 +212,28 @@ spec:
       runAfter:
         - git-clone
 
+    - name: trivy-repo-scanner
+      taskRef:
+        name: trivy-repo-scanner
+        kind: Task
+      params:
+        - name: REPO_URL
+          value: $(body.pull_request.head.repo.clone_url)
+        - name: ARGS
+          value: 
+            - repo --scanners vuln,secret --severity HIGH
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+        - name: github
+          workspace: github
+      runAfter:
+        - lint-code
+      when:
+        - input: "$(params.pipeline-mode)"
+          operator: in
+          values: ["ci"]
+
     - name: semver
       taskRef:
         name: semver
@@ -235,7 +257,7 @@ spec:
         - name: github
           workspace: github
       runAfter:
-        - lint-code
+        - trivy-repo-scanner
 
     - name: helm-path
       taskRef:
@@ -293,9 +315,9 @@ spec:
           operator: in
           values: ["cd"]
 
-    - name: trivy-scanner
+    - name: trivy-image-scanner
       taskRef:
-        name: trivy-scanner
+        name: trivy-image-scanner
         kind: Task
       params:
         - name: IMAGE_PATH
@@ -340,7 +362,7 @@ spec:
         - name: github
           workspace: github
       runAfter:
-        - trivy-scanner
+        - trivy-image-scanner
       when:
         - input: "$(params.pipeline-mode)"
           operator: in

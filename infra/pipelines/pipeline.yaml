@@ -217,8 +217,8 @@ spec:
         name: trivy-repo-scanner
         kind: Task
       params:
-        - name: REPO_URL
-          value: $(body.pull_request.head.repo.clone_url)
+        - name: url
+          value: $(params.url)
         - name: ARGS
           value: 
             - repo --scanners vuln,secret --severity HIGH

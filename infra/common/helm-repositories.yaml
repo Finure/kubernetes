@@ -181,3 +181,12 @@ metadata:
 spec:
   interval: 1h0m0s
   url: https://vmware-tanzu.github.io/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: sonarsource
+  namespace: tools
+spec:
+  interval: 1h0m0s
+  url: https://SonarSource.github.io/helm-chart-sonarqube

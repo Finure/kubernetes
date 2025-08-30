@@ -33,6 +33,11 @@ spec:
               passwordSecret:
                 name: finure-app
               login: true
+            - name: sonarqube
+              ensure: present
+              passwordSecret:
+                name: sonarqube
+              login: true
         backups:
             enabled: true
             provider: google

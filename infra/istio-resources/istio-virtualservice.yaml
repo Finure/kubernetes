@@ -257,3 +257,23 @@ spec:
         host: argo-workflows-server.argo.svc.cluster.local
         port:
           number: 2746
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: sonarqube
+  namespace: tools
+spec:
+  hosts:
+  - "sonarqube.clokesh.me"
+  gateways:
+  - tools-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: sonarqube-sonarqube.tools.svc.cluster.local
+        port:
+          number: 9000

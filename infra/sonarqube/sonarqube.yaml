@@ -15,11 +15,14 @@ spec:
     interval: 1h0m0s
     values:
         deploymentType: Deployment
-        monitoringPasscode: "b552aa73e426d52ccc5f"
+        monitoringPasscodeSecretName: "sonarqube"
+        monitoringPasscodeSecretKey: "monitoringPasscode"
         prometheusExporter:
           enabled: true
         community:
           enabled: true
+        setAdminPassword:
+          passwordSecretName: "sonarqube"
         persistence:
             enabled: true
             accessMode: ReadWriteOnce

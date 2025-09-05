@@ -695,23 +695,46 @@ spec:
   prune: true
   dependsOn:
     - name: secrets
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: &appname sonarqube
-  namespace: flux-system
-spec:
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: *appname
-  interval: 1m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  path: ./infra/sonarqube
-  wait: true
-  prune: true
-  dependsOn:
-    - name: secrets
-    - name: cnpg-cluster
+# ---
+# apiVersion: kustomize.toolkit.fluxcd.io/v1
+# kind: Kustomization
+# metadata:
+#   name: &appname sonarqube
+#   namespace: flux-system
+# spec:
+#   commonMetadata:
+#     labels:
+#       app.kubernetes.io/name: *appname
+#   interval: 1m
+#   sourceRef:
+#     kind: GitRepository
+#     name: flux-system
+#   path: ./infra/sonarqube/sonarqube
+#   wait: true
+#   prune: true
+#   healthChecks:
+#     - apiVersion: apps/v1
+#       kind: Deployment
+#       name: sonarqube-sonarqube
+#       namespace: tools
+#   dependsOn:
+#     - name: secrets
+#     - name: cnpg-cluster
+# ---
+# apiVersion: kustomize.toolkit.fluxcd.io/v1
+# kind: Kustomization
+# metadata:
+#   name: &appname sonarqube-bootstrap
+#   namespace: flux-system
+# spec:
+#   commonMetadata:
+#     labels:
+#       app.kubernetes.io/name: *appname
+#   interval: 1m
+#   sourceRef:
+#     kind: GitRepository
+#     name: flux-system
+#   path: ./infra/sonarqube/sonarqube-bootstrap
+#   wait: true
+#   dependsOn:
+#     - name: sonarqube

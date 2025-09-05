@@ -16,8 +16,9 @@ spec:
     values:
         deploymentType: Deployment
         monitoringPasscode: "b552aa73e426d52ccc5f"
-        edition: developer
         prometheusExporter:
+          enabled: true
+        community:
           enabled: true
         persistence:
             enabled: true

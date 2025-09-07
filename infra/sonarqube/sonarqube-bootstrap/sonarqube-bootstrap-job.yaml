@@ -1,0 +1,143 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sonarqube-bootstrap
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: bootstrap
+          image: curlimages/curl:8.15.0
+          env:
+            - name: SQ_URL
+              value: "http://sonarqube-sonarqube.tools.svc.cluster.local:9000"
+            - name: SQ_ADMIN_USER
+              value: "admin"
+            - name: SQ_ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: sonarqube
+                  key: password
+            - name: SQ_PROJECT_KEY
+              value: "python"
+            - name: SQ_PROJECT_NAME
+              value: "Finure"
+            - name: SQ_TOKEN_NAME
+              value: "python-service"
+            - name: SQ_CUSTOM_GATE
+              value: "Finure Python"
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -euo pipefail
+
+              echo "Waiting for SonarQube"
+              for i in $(seq 1 120); do
+                STATUS="$(curl -sS --fail "$SQ_URL/api/system/status" || true)"
+                echo "$STATUS" | grep -q '"status":"UP"' && break
+                sleep 5
+              done
+              echo "$STATUS" | grep -q '"status":"UP"' || { echo "Sonar not up"; exit 1; }
+              echo "SonarQube is up"
+
+              auth="-u ${SQ_ADMIN_USER}:${SQ_ADMIN_PASS}"
+
+              # Create project 
+              echo "Ensuring project ${SQ_PROJECT_KEY} exists"
+              if ! curl -sS $auth \
+                   "$SQ_URL/api/projects/search?projects=${SQ_PROJECT_KEY}" \
+                   | grep -q "\"key\":\"${SQ_PROJECT_KEY}\""; then
+                curl -sS $auth --data-urlencode "project=${SQ_PROJECT_KEY}" \
+                     --data-urlencode "name=${SQ_PROJECT_NAME}" \
+                     "$SQ_URL/api/projects/create"
+                echo "Project created"
+              else
+                echo "Project already exists"
+              fi
+
+              # Create the gate 
+              curl -sS $auth \
+                --data-urlencode "name=${SQ_CUSTOM_GATE}" \
+                "$SQ_URL/api/qualitygates/create" >/dev/null 2>&1 || true
+
+              echo "Fetching quality gate"
+              GATE_JSON="$(curl -sS $auth --get --data-urlencode "name=${SQ_CUSTOM_GATE}" \
+                "$SQ_URL/api/qualitygates/show")"
+              echo "$GATE_JSON" | head -n1 | cut -c1-120
+              echo
+
+              echo "Normalizing JSON"
+              CONDS="$(printf '%s' "$GATE_JSON" \
+                | tr -d '\r\n' \
+                | sed 's/},{/}\n{/g')"
+              printf '%s\n' "$CONDS" 
+              echo
+
+              echo "Filtering"
+              CONDS="$(printf '%s\n' "$CONDS" | grep -E '^\{"id":')"
+              printf '%s\n' "$CONDS"
+              echo
+
+              echo "Extracing coverage ID"
+              ID_COV="$(printf '%s' "$GATE_JSON" \
+                | tr -d '\r\n' \
+                | sed 's/},{/}\n{/g' \
+                | grep '"metric":"new_coverage"' \
+                | sed -n 's/.*"id":"\([^"]*\)".*/\1/p')"
+              echo "ID_COV: $ID_COV"
+
+              echo
+              echo "Extracing duplicate code ID"
+              LINE_DUP="$(printf '%s\n' "$CONDS" | grep -F '"metric":"new_duplicated_lines_density"' || true)"
+              echo "LINE_DUP: $LINE_DUP"
+              ID_DUP="$(printf '%s\n' "$LINE_DUP" | cut -d'"' -f4 || true)"
+              echo "ID_DUP: $ID_DUP"
+              echo "new_coverage id: $ID_COV"
+              echo "new_duplicated_lines_density id: $ID_DUP"
+
+              # Update quality gate with tmp values
+              curl -sS $auth \
+                --data-urlencode "id=${ID_COV}" \
+                --data-urlencode "metric=new_coverage" \
+                --data-urlencode "op=LT" \
+                --data-urlencode "error=0" \
+                "$SQ_URL/api/qualitygates/update_condition" >/dev/null
+
+              curl -sS $auth \
+                --data-urlencode "id=${ID_DUP}" \
+                --data-urlencode "metric=new_duplicated_lines_density" \
+                --data-urlencode "op=GT" \
+                --data-urlencode "error=25" \
+                "$SQ_URL/api/qualitygates/update_condition" >/dev/null
+
+              # Assign the gate to this project
+              echo "Assigning '${SQ_CUSTOM_GATE}' to project ${SQ_PROJECT_KEY}"
+              curl -sS $auth \
+                --data-urlencode "gateName=${SQ_CUSTOM_GATE}" \
+                --data-urlencode "projectKey=${SQ_PROJECT_KEY}" \
+                "$SQ_URL/api/qualitygates/select" >/dev/null || true
+
+              # Create a user token for CI
+              echo "Creating user token"
+              # Revoke existing token with same name
+              curl -sS $auth \
+                --data-urlencode "project=${SQ_PROJECT_KEY}" \
+                --data-urlencode "name=${SQ_TOKEN_NAME}" \
+                "$SQ_URL/api/user_tokens/revoke" >/dev/null 2>&1 || true
+
+              TOKEN_JSON="$(curl -sS $auth \
+                --data-urlencode "project=${SQ_PROJECT_KEY}" \
+                --data-urlencode "name=${SQ_TOKEN_NAME}" \
+                --data-urlencode "type=GLOBAL_ANALYSIS_TOKEN" \
+                "$SQ_URL/api/user_tokens/generate")"
+
+              CI_TOKEN="$(echo "$TOKEN_JSON" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')"
+              if [ -z "$CI_TOKEN" ]; then
+                echo "Could not parse token"
+              else
+                echo "Token: $CI_TOKEN"
+              fi
+
+              echo "Bootstrap complete"

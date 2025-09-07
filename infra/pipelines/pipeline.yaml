@@ -212,6 +212,54 @@ spec:
       runAfter:
         - git-clone
 
+    - name: checkov
+      taskRef:
+        name: checkov
+        kind: Task
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+        - name: github
+          workspace: github
+      runAfter:
+        - lint-code
+      when:
+        - input: "$(params.pipeline-mode)"
+          operator: in
+          values: ["ci"]
+
+    - name: sonarqube
+      taskRef:
+        name: sonarqube
+        kind: Task
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+        - name: github
+          workspace: github
+      runAfter:
+        - lint-code
+      when:
+        - input: "$(params.pipeline-mode)"
+          operator: in
+          values: ["ci"]
+
+    - name: snyk
+      taskRef:
+        name: snyk
+        kind: Task
+      workspaces:
+        - name: shared-workspace
+          workspace: shared-workspace
+        - name: github
+          workspace: github
+      runAfter:
+        - lint-code
+      when:
+        - input: "$(params.pipeline-mode)"
+          operator: in
+          values: ["ci"]
+
     - name: trivy-repo-scanner
       taskRef:
         name: trivy-repo-scanner
@@ -220,7 +268,7 @@ spec:
         - name: url
           value: $(params.url)
         - name: ARGS
-          value: 
+          value:
             - repo --scanners vuln,secret --severity HIGH
       workspaces:
         - name: shared-workspace
@@ -323,7 +371,7 @@ spec:
         - name: IMAGE_PATH
           value: "$(params.registry-url)/$(params.repo-owner)/$(params.repo-name):$(tasks.semver.results.version)"
         - name: ARGS
-          value: 
+          value:
             - image
       workspaces:
         - name: shared-workspace

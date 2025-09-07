@@ -1,0 +1,211 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: sonarqube
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: sonarPropertiesPath
+      type: string
+      default: "./sonar-project.properties"
+      description: Path to sonar-project.properties in the repo
+    - name: sonarHostUrl
+      type: string
+      default: "http://sonarqube-sonarqube.tools.svc.cluster.local:9000"
+      description: Optional override for SonarQube host URL
+    - name: sonarUsername
+      type: string
+      default: "admin"
+      description: SonarQube username to create the token for
+    - name: tokenName
+      type: string
+      default: "tekton-ci-token"
+      description: Name of the user token to (re)generate
+    - name: additionalScannerArgs
+      type: string
+      default: ""
+      description: Extra flags to append
+    - name: waitForQualityGate
+      type: string
+      default: "true"
+      description: "true/false to fetch Quality Gate status after analysis"
+  workspaces:
+    - name: shared-workspace
+      description: Source code context including Dockerfile.
+    - name: github
+      description: Optional workspace to provide .docker/config.json for registry auth.
+  results:
+    - name: quality-gate-status
+      description: "Quality Gate status (OK/WARN/ERROR/SKIPPED)"
+    - name: dashboard-url
+      description: "SonarQube project dashboard URL"
+  steps:
+    - name: generate-token
+      image: curlimages/curl:8.15.0
+      workingDir: $(workspaces.shared-workspace.path)
+      env:
+        - name: SONAR_USERNAME
+          value: $(params.sonarUsername)
+        - name: SONAR_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: tekton
+              key: sonarqube-password
+        - name: PROP_PATH
+          value: $(params.sonarPropertiesPath)
+        - name: SQ_TOKEN_NAME
+          value: $(params.tokenName)
+        - name: SONAR_HOST_URL_PARAM
+          value: $(params.sonarHostUrl)
+      script: |
+        set -euo pipefail
+
+        [ -f "$PROP_PATH" ] || { echo "Missing $PROP_PATH"; exit 1; }
+
+        # Read required fields from sonar-project.properties
+        SQ_URL="${SONAR_HOST_URL_PARAM}"  
+        if [ -z "${SQ_URL}" ]; then
+          echo "ERROR: sonarHostUrl param must be provided"
+          exit 1
+        fi
+
+        SQ_PROJECT_KEY="$(grep -E '^sonar\.projectKey=' "$PROP_PATH" | head -n1 | cut -d'=' -f2- | tr -d '[:space:]' || true)"
+        if [ -z "${SQ_URL}" ] || [ -z "${SQ_PROJECT_KEY}" ]; then
+          echo "sonar.host.url or sonar.projectKey not found in $PROP_PATH"
+          exit 1
+        fi
+
+        echo "Creating user token '${SQ_TOKEN_NAME}' for project '${SQ_PROJECT_KEY}' (user: ${SONAR_USERNAME})"
+
+        auth="-u ${SONAR_USERNAME}:${SONAR_PASSWORD}"
+
+        # Revoke an existing token with the same name (ignore errors)
+        echo "Creating user token"
+        # Revoke existing token with same name
+        curl -sS $auth \
+          --data-urlencode "project=${SQ_PROJECT_KEY}" \
+          --data-urlencode "name=${SQ_TOKEN_NAME}" \
+          "$SQ_URL/api/user_tokens/revoke" >/dev/null 2>&1 || true
+
+        TOKEN_JSON="$(curl -sS $auth \
+          --data-urlencode "project=${SQ_PROJECT_KEY}" \
+          --data-urlencode "name=${SQ_TOKEN_NAME}" \
+          --data-urlencode "type=GLOBAL_ANALYSIS_TOKEN" \
+          "$SQ_URL/api/user_tokens/generate")"
+
+        SONAR_TOKEN="$(echo "$TOKEN_JSON" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')"
+        if [ -z "$SONAR_TOKEN" ]; then
+          echo "Could not parse token"
+        else
+          echo "Token: $SONAR_TOKEN"
+        fi
+
+        # Save token to a file (consumed by later steps)
+        echo -n "$SONAR_TOKEN" > .sonar_ci_token
+
+        # Also save convenience outputs for later steps
+        echo -n "${SQ_URL%/}" > .sonar_host_url
+        echo -n "${SQ_PROJECT_KEY}" > .sonar_project_key
+
+        # Write dashboard URL result
+        DASH_URL="${SQ_URL%/}/project/overview?id=${SQ_PROJECT_KEY}"
+        printf "%s" "$DASH_URL" > "$(results.dashboard-url.path)"
+
+    - name: sonar-scan
+      image: sonarsource/sonar-scanner-cli:latest
+      workingDir: $(workspaces.shared-workspace.path)
+      env:
+        - name: PROP_PATH
+          value: $(params.sonarPropertiesPath)
+        - name: EXTRA_ARGS
+          value: $(params.additionalScannerArgs)
+      script: |
+        set -euo pipefail
+
+        [ -f ".sonar_ci_token" ] || { echo "Token file missing"; exit 1; }
+        [ -f ".sonar_host_url" ] || { echo "Host URL file missing"; exit 1; }
+        [ -f "$PROP_PATH" ] || { echo "Missing $PROP_PATH"; exit 1; }
+        SONAR_TOKEN="$(cat .sonar_ci_token)"
+        HOST_URL="$(cat .sonar_host_url)"
+        ARGS="-Dsonar.host.url=${HOST_URL} -Dsonar.token=${SONAR_TOKEN}"
+        if [ -n "${EXTRA_ARGS}" ]; then
+          ARGS="$ARGS ${EXTRA_ARGS}"
+        fi
+
+        echo "Running sonar-scanner against ${HOST_URL}"
+        sonar-scanner $ARGS
+
+    - name: quality-gate
+      image: alpine:3.22
+      workingDir: $(workspaces.shared-workspace.path)
+      env:
+        - name: WAIT_QG
+          value: $(params.waitForQualityGate)
+      script: |
+        set -euo pipefail
+        if [ "$WAIT_QG" != "true" ]; then
+          echo "Skipping quality gate status check."
+          printf "%s" "SKIPPED" > "$(results.quality-gate-status.path)"
+          exit 0
+        fi
+
+        apk add --no-cache curl jq > /dev/null
+
+        [ -f ".sonar_ci_token" ] || { echo "Token file missing"; printf "%s" "SKIPPED" > "$(results.quality-gate-status.path)"; exit 0; }
+        [ -f ".sonar_host_url" ] || { echo "Host URL file missing"; printf "%s" "SKIPPED" > "$(results.quality-gate-status.path)"; exit 0; }
+        [ -f ".sonar_project_key" ] || { echo "Project key file missing"; printf "%s" "SKIPPED" > "$(results.quality-gate-status.path)"; exit 0; }
+
+        SONAR_TOKEN="$(cat .sonar_ci_token)"
+        HOST_URL="$(cat .sonar_host_url)"
+        PROJECT_KEY="$(cat .sonar_project_key)"
+
+        URL="${HOST_URL}/api/qualitygates/project_status?projectKey=${PROJECT_KEY}"
+
+        ATTEMPTS=24
+        SLEEP=5
+        STATUS="PENDING"
+        while [ $ATTEMPTS -gt 0 ]; do
+          # Get body and HTTP code separately (no set -e on curl)
+          HTTP_CODE=0
+          RESP="$(curl -sS -u "${SONAR_TOKEN}:" -w '\n%{http_code}' "$URL" || true)"
+          BODY="$(printf "%s" "$RESP" | sed '$d')"            # all but last line
+          HTTP_CODE="$(printf "%s" "$RESP" | tail -n1)"       # last line
+
+          if [ "$HTTP_CODE" -ge 400 ] || [ -z "$BODY" ]; then
+            echo "Quality Gate API error (HTTP $HTTP_CODE). URL: $URL"
+            printf "%s" "UNKNOWN" > "$(results.quality-gate-status.path)"
+            exit 1
+          fi
+
+          # Parse status if present
+          if echo "$BODY" | jq -e .projectStatus.status >/dev/null 2>&1; then
+            STATUS="$(echo "$BODY" | jq -r .projectStatus.status)"
+            echo "Quality Gate status: $STATUS"
+            case "$STATUS" in
+              OK)
+                printf "%s" "$STATUS" > "$(results.quality-gate-status.path)"
+                exit 0
+                ;;
+              ERROR|WARN)
+                # choose policy: fail on ERROR (and optionally on WARN)
+                printf "%s" "$STATUS" > "$(results.quality-gate-status.path)"
+                [ "$STATUS" = "ERROR" ] && exit 1 || exit 0
+                ;;
+              PENDING|NONE)
+                # keep waiting
+                ;;
+              *)
+                echo "Unexpected status: $STATUS"
+                printf "%s" "$STATUS" > "$(results.quality-gate-status.path)"
+                exit 1
+                ;;
+            esac
+          fi
+
+          ATTEMPTS=$((ATTEMPTS-1))
+          sleep $SLEEP
+        done
+
+        echo "Timed out waiting for Quality Gate (last status: $STATUS)"
+        printf "%s" "$STATUS" > "$(results.quality-gate-status.path)"
+        exit 1

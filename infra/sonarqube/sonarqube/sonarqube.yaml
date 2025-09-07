@@ -1,0 +1,47 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: sonarqube
+    namespace: tools
+spec:
+    chart:
+        spec:
+            chart: sonarqube
+            version: 2025.4.2
+            sourceRef:
+                kind: HelmRepository
+                name: sonarsource
+                namespace: tools
+    interval: 1h0m0s
+    values:
+        deploymentType: Deployment
+        monitoringPasscodeSecretName: "sonarqube"
+        monitoringPasscodeSecretKey: "monitoringPasscode"
+        prometheusExporter:
+          enabled: true
+        community:
+          enabled: true
+        setAdminPassword:
+          passwordSecretName: "sonarqube"
+        account:
+          adminPasswordSecretName: "sonarqube"
+        persistence:
+            enabled: true
+            accessMode: ReadWriteOnce
+            size: 5Gi
+        sonarProperties:
+            sonar.core.serverBaseURL: https://sonarqube.clokesh.me
+            sonar.forceAuthentication: true
+        jdbcDatabaseType: postgresql
+        createPostgresqlSecret: false
+        postgresql:
+          enabled: false
+        jdbcOverwrite:
+            enabled: true
+            jdbcUrl: jdbc:postgresql://cnpg-cluster-rw.cnpg-database.svc.cluster.local:5432/sonarqube
+            jdbcUsername: sonarqube
+            jdbcSecretName: sonarqube
+            jdbcSecretPasswordKey: password
+        extraConfig:
+            secrets:
+                - sonarqube

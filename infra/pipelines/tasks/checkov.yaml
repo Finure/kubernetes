@@ -1,0 +1,33 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: checkov
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: CHECK_ID
+      description: Checkov check IDs
+      type: string
+      default: "CKV_SECRET_6"
+    - name: CHECK_PATH
+      description: k8s dir path
+      type: string
+      default: "k8s"
+    - name: FRAMEWORK
+      description: checkov scan framework
+      type: string
+      default: "helm,kubernetes,secrets"
+  workspaces:
+    - name: shared-workspace
+      description: Source code context including Dockerfile.
+    - name: github
+      description: Optional workspace to provide .docker/config.json for registry auth.
+  steps:
+    - name: checkov-scan
+      image: bridgecrew/checkov:3.2.469
+      workingDir: $(workspaces.shared-workspace.path)
+      script: |
+        #!/bin/sh
+        set -eu pipefail
+        echo "Scanning hardcoded secrets in k8s"
+        checkov -d $(params.CHECK_PATH) --framework $(params.FRAMEWORK) --check $(params.CHECK_ID)

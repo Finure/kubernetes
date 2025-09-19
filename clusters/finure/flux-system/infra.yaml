@@ -736,5 +736,6 @@ spec:
     name: flux-system
   path: ./infra/sonarqube/sonarqube-bootstrap
   wait: true
+  prune: true
   dependsOn:
     - name: sonarqube

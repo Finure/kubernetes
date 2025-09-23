@@ -121,14 +121,14 @@ End-to-end ML workflow from data ingestion to model training to deployment
 - **GCS**: Centralized storage for datasets, model artifacts, and backups
 - **Airflow**: Orchestrates data pipelines, manages datasets via GCS, triggers ML workflows via Argo Events and sends notifications to Slack
 - **Argo Events**: Event-driven automation to trigger ML pipeline using Argo Workflows based on successful Airflow data pipeline runs
-- **Argo Workflows**: Kubernetes-native workflow engine to run containerized ML training jobs on new datasets using model code in ([Finure AI Models Repo](https://github.com/Finure/finure-ai-models)) and store trained models in GCS
+- **Argo Workflows**: Kubernetes-native workflow engine to run containerized ML training jobs on new datasets using model code in ([Finure AI Models Repo](https://github.com/Finure/ai-models)) and store trained models in GCS
 - **KServe**: Serves ML models for real-time predictions using custom-trained models. Scales to zero when not in use to save resources, runs on Knative for serverless deployments & management.
 - **Knative**: Works with Kserve to deploy and manage serverless ML model inference services
 
 ### High-Level Flow
 1. **Data Ingestion**: Airflow DAG downloads dataset from Kaggle, validates, cleans, uploads the dataset to GCS, sends an event to Argo Events and notifies Slack
 2. **Event Trigger**: Receives event from Airflow with the new dataset path, uses it as input to trigger Argo Workflow
-3. **Model Training**: Argo Event triggers Argo Workflow to run ML training jobs on the new dataset using model code in ([Finure AI Models Repo](https://github.com/Finure/finure-ai-models)) and stores newly trained models in GCS
+3. **Model Training**: Argo Event triggers Argo Workflow to run ML training jobs on the new dataset using model code in ([Finure AI Models Repo](https://github.com/Finure/ai-models)) and stores newly trained models in GCS
 4. **Model Deployment**: KServe monitors GCS for new models, automatically deploys them as serverless inference services on Knative, scales to zero when not in use to save resources
 5. **Prediction**: Finure app backend consumes credit card application data from Kafka, sends it to KServe for real-time predictions using the deployed model and stores results in PostgreSQL
 6. **Monitoring & Alerts**: Prometheus, Grafana and Jaeger monitor the entire ML pipeline, set up alerts for failures or performance issues

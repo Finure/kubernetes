@@ -48,6 +48,7 @@ The infrastructure includes the following components:
 23. **Vault:** HashiCorp Vault for managing secrets and sensitive data securely, working with External Secrets Operator to sync secrets on the cluster & uses GCS as the storage backend
 24. **External Secrets Operator:** Integrates with Vault to sync secrets into Kubernetes secrets for infra & Finure apps
 25. **Tekton**: Dynamic & re-usable Kubernetes-native CI/CD pipeline tool to automate build, test and deployment workflows for Finure applications
+26. **KEDA**: Kubernetes Event-Driven Autoscaling to scale Finure app-backend consumers based on Kafka lag
 
 ## Tekton Pipeline
 

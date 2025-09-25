@@ -1,0 +1,15 @@
+apiVersion: keda.sh/v1alpha1
+kind: ClusterTriggerAuthentication
+metadata:
+  name: kafka
+spec:
+  secretTargetRef:
+    - parameter: ca
+      name: finure-cluster-ca-cert
+      key: ca.crt
+    - parameter: cert
+      name: kafka
+      key: user.crt
+    - parameter: key
+      name: kafka
+      key: user.key

@@ -53,7 +53,7 @@ spec:
         metadata:
           annotations:
             reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
-            reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "ai"
+            reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "ai,keda"
     version: 4.0.0
     metadataVersion: 4.0-IV3
     listeners:

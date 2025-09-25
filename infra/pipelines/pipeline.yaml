@@ -305,7 +305,7 @@ spec:
         - name: github
           workspace: github
       runAfter:
-        - trivy-repo-scanner
+        - lint-code
 
     - name: helm-path
       taskRef:
@@ -326,7 +326,7 @@ spec:
       when:
         - input: "$(params.pipeline-mode)"
           operator: in
-          values: ["ci"]
+          values: ["ci", "cd"]
 
     - name: build-push-image
       taskRef:

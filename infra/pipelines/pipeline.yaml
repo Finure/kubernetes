@@ -305,7 +305,7 @@ spec:
         - name: github
           workspace: github
       runAfter:
-        - trivy-repo-scanner
+        - lint-code
 
     - name: helm-path
       taskRef:

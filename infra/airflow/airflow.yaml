@@ -16,7 +16,7 @@ spec:
   values:
     postgresql:
       image:
-        repository: docker.io/bitnamilegacy/postgresql
+        repository: bitnamilegacy/postgresql
         tag: 16.2.0-debian-11-r1
     airflowVersion: "3.0.4"
     defaultAirflowTag: "3.0.4"
@@ -39,7 +39,7 @@ spec:
           spec:
             storageClassName: "standard-rwo"
             accessModes:
-              - "ReadWriteOnce"                   
+              - "ReadWriteOnce"
             resources:
               requests:
                 storage: "12Gi"

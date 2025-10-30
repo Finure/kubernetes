@@ -1,0 +1,48 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+    name: otel-collector
+    namespace: monitoring
+spec:
+    chart:
+        spec:
+            chart: opentelemetry-collector
+            version: 0.136.1
+            sourceRef:
+                kind: HelmRepository
+                name: opentelemetry
+                namespace: monitoring
+    interval: 1h0m0s
+    values:
+        mode: deployment
+        replicaCount: 3
+        image:
+            repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib
+        command:
+            name: otelcol-contrib
+        config:
+            processors:
+                filter/drop_istio_traces:
+                    traces:
+                        span:
+                            - resource.attributes["k8s.container.name"] == "istio-proxy"
+            exporters:
+                otlp/signoz:
+                    endpoint: signoz-otel-collector.monitoring.svc.cluster.local.:4317
+                    tls:
+                        insecure: true
+            service:
+                pipelines:
+                    traces:
+                        processors:
+                            - filter/drop_istio_traces
+                        exporters:
+                            - otlp/signoz
+        rollout:
+            rollingUpdate:
+                maxSurge: 25%
+                maxUnavailable: 1
+            strategy: RollingUpdate
+        podDisruptionBudget:
+            enabled: false
+            maxUnavailable: 1

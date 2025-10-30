@@ -707,6 +707,7 @@ spec:
     labels:
       app.kubernetes.io/name: *appname
   interval: 1m
+  timeout: 15m
   sourceRef:
     kind: GitRepository
     name: flux-system

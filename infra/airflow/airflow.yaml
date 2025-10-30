@@ -14,6 +14,10 @@ spec:
         namespace: airflow
   interval: 1h0m0s
   values:
+    postgresql:
+      image:
+        repository: docker.io/bitnamilegacy/postgresql
+        tag: 16.2.0-debian-11-r1
     airflowVersion: "3.0.4"
     defaultAirflowTag: "3.0.4"
     scheduler:

@@ -1,0 +1,31 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: beyla
+  namespace: monitoring
+spec:
+  chart:
+    spec:
+      chart: beyla
+      version: 1.9.7
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+        namespace: monitoring
+  interval: 1h0m0s
+  values:
+    service:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: promstack
+    config:
+      data:
+        network:
+          enable: true
+        otel_traces_export:
+          endpoint: http://otel-collector-opentelemetry-collector:4317
+        discovery:
+          instrument:
+            - k8s_namespace: "ai"

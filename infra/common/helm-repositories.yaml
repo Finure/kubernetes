@@ -47,7 +47,7 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: loki
+  name: grafana
   namespace: monitoring
 spec:
   interval: 1h0m0s
@@ -199,3 +199,21 @@ metadata:
 spec:
   interval: 1h0m0s
   url: https://kedacore.github.io/charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: opentelemetry
+  namespace: monitoring
+spec:
+  interval: 1h0m0s
+  url: https://open-telemetry.github.io/opentelemetry-helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: signoz
+  namespace: monitoring
+spec:
+  interval: 1h0m0s
+  url: https://charts.signoz.io

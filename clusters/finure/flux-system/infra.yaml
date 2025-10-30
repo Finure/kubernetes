@@ -574,6 +574,7 @@ spec:
     labels:
       app.kubernetes.io/name: *appname
   interval: 1m
+  timeout: 10m
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -754,8 +755,25 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/keda
+  path: ./infra/keda/keda
+  wait: true
+  prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &appname keda-auth
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/keda/auth
   wait: true
   prune: true
   dependsOn:
-    - name: production-app-backend
+    - name: keda

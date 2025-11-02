@@ -217,3 +217,13 @@ metadata:
 spec:
   interval: 1h0m0s
   url: https://charts.signoz.io
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: github-actions
+  namespace: github-actions
+spec:
+  interval: 1h0m0s
+  url: oci://ghcr.io/actions/actions-runner-controller-charts
+  type: "oci"

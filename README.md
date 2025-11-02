@@ -38,9 +38,9 @@ The infrastructure includes the following components:
 13. **Knative:** Works with Kserve to deploy and manage serverless ML model inference services
 14. **Kserve:** Serves ML models for real-time predictions using custom-trained models. Scales to zero when not in use to save resources, runs on Knative for serverless deployments & management.
 15. **Kyverno:** Kubernetes-native policy engine to enforce security, compliance and operational policies
-16. **Observability Stack:** Prometheus, Grafana, Fluent Bit and Loki for monitoring, alerting and log aggregation using GCS for long-term storage
-17. **OpenTelemetry:** Collects metrics and traces from applications and infrastructure, integrates with Jaeger (planned)
-18. **Opencost:** Cost monitoring and optimization tool for Kubernetes clusters 
+16. **Metrics:** Prometheus for metrics and Grafana for visualization
+17. **Logging:**: Fluentbit as lightweight log forwarder, Loki with GCS as the backend and Grafana for query 
+18. **Observability:**: Beyla for auto instrumentation of app metrics and traces using eBPF, OpenTelemetry Collector for central pipeline and Signoz as the backend
 19. **PostgreSQL:** Cloudnative PostgreSQL operator and PostgreSQL cluster for Finure infra apps such as SonarQube & Finure apps
 20. **Reflector:** Replicates Kubernetes secrets across namespaces for easier management
 21. **SonarQube:** Code quality and security analysis tool for continuous inspection of code
@@ -49,6 +49,8 @@ The infrastructure includes the following components:
 24. **External Secrets Operator:** Integrates with Vault to sync secrets into Kubernetes secrets for infra & Finure apps
 25. **Tekton**: Dynamic & re-usable Kubernetes-native CI/CD pipeline tool to automate build, test and deployment workflows for Finure applications
 26. **KEDA**: Kubernetes Event-Driven Autoscaling to scale Finure app-backend consumers based on Kafka lag
+27. **Opencost:** Cost monitoring and optimization tool for Kubernetes clusters 
+28. **GitHub Actions:**: Self-hosted GitHub Actions runners to run GitHub workflows (more planned)
 
 ## Tekton Pipeline
 

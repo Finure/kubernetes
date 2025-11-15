@@ -16,6 +16,12 @@ spec:
     values:
         provider:
           name: cloudflare
+        sources:
+          - service
+          - ingress
+          - gateway-httproute
+        extraArgs:
+          - --cloudflare-proxied
         env:
         - name: CF_API_TOKEN
           valueFrom:

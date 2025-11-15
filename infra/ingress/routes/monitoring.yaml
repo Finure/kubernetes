@@ -1,0 +1,75 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: prometheus
+  namespace: monitoring
+spec:
+  parentRefs:
+    - name: gateway
+      namespace: istio-ingress
+  hostnames: ["prometheus.clokesh.me"]
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: prometheus-operated
+          port: 9090
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: alertmanager
+  namespace: monitoring
+spec:
+  parentRefs:
+    - name: gateway
+      namespace: istio-ingress
+  hostnames: ["alertmanager.clokesh.me"]
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: alertmanager-operated
+          port: 9093
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  parentRefs:
+    - name: gateway
+      namespace: istio-ingress
+  hostnames: ["grafana.clokesh.me"]
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: promstack-grafana
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: signoz
+  namespace: monitoring
+spec:
+  parentRefs:
+    - name: gateway
+      namespace: istio-ingress
+  hostnames: ["signoz.clokesh.me"]
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: signoz
+          port: 8080

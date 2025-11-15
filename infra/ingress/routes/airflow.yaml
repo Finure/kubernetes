@@ -1,0 +1,18 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: airflow
+  namespace: airflow
+spec:
+  parentRefs:
+    - name: gateway
+      namespace: istio-ingress
+  hostnames: ["airflow.clokesh.me"]
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: airflow-api-server
+          port: 8080

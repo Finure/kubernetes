@@ -6,7 +6,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: istio-ingress
+      namespace: istio-system
   hostnames: ["atlantis.clokesh.me"]
   rules:
     - matches:
@@ -25,7 +25,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: istio-ingress
+      namespace: istio-system
   hostnames: ["opencost.clokesh.me"]
   rules:
     - matches:
@@ -44,7 +44,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: istio-ingress
+      namespace: istio-system
   hostnames: ["sonarqube.clokesh.me"]
   rules:
     - matches:

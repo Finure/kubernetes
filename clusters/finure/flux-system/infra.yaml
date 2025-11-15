@@ -150,7 +150,7 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &appname istio-resources
+  name: &appname ingress-gateway
   namespace: flux-system
 spec:
   commonMetadata:
@@ -160,10 +160,28 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/istio-resources
+  path: ./infra/ingress/gateway
   prune: true
   dependsOn:
     - name: istio
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &appname ingress-routes
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/ingress/routes
+  prune: true
+  dependsOn:
+    - name: ingress-gateway
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

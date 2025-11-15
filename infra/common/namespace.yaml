@@ -38,7 +38,7 @@ kind: Namespace
 metadata:
   name: ai
   labels:
-    istio-injection: enabled
+    istio.io/dataplane-mode=ambient
 ---
 apiVersion: v1
 kind: Namespace

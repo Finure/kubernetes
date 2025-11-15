@@ -6,7 +6,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: istio-ingress
+      namespace: istio-system
   hostnames: ["airflow.clokesh.me"]
   rules:
     - matches:

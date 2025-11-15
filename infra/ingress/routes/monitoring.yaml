@@ -6,7 +6,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: istio-ingress
+      namespace: istio-system
   hostnames: ["prometheus.clokesh.me"]
   rules:
     - matches:
@@ -25,7 +25,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: istio-ingress
+      namespace: istio-system
   hostnames: ["alertmanager.clokesh.me"]
   rules:
     - matches:
@@ -44,7 +44,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: istio-ingress
+      namespace: istio-system
   hostnames: ["grafana.clokesh.me"]
   rules:
     - matches:
@@ -63,7 +63,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: istio-ingress
+      namespace: istio-system
   hostnames: ["signoz.clokesh.me"]
   rules:
     - matches:

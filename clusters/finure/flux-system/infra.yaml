@@ -28,8 +28,26 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infra/istio
+  path: ./infra/istio/istio
   prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &appname istio-resources
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/istio/istio-resources
+  prune: true
+  dependsOn:
+    - name: istio
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -150,6 +168,24 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
+  name: &appname gateway-api
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infra/ingress/gateway-api
+  prune: true
+  dependsOn:
+    - name: istio
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
   name: &appname ingress-gateway
   namespace: flux-system
 spec:
@@ -163,7 +199,7 @@ spec:
   path: ./infra/ingress/gateway
   prune: true
   dependsOn:
-    - name: istio
+    - name: gateway-api
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

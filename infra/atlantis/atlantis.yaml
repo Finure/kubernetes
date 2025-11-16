@@ -60,12 +60,16 @@ spec:
               secretKeyRef:
                 name: atlantis-env
                 key: GITHUB_TOKEN
+            - name: ATLANTIS_API_SECRET
+              secretKeyRef:
+                name: atlantis-env
+                key: ATLANTIS_API_SECRET
 sops:
     gcp_kms:
         - resource_id: projects/finure-465001/locations/global/keyRings/gcp-finure/cryptoKeys/sops-key
           created_at: "2025-07-18T11:36:37Z"
           enc: CiQA2FBvQ13l+C30v9rhVi5JjleeVIcqqU6s7u3dRRuoi5OetWESSQD6dMGYF4Uw9JXOLAGwfrsFUGUyooqrMHpXfIYmLf80vBNObfgVpdDelxi8Hf7LIYHL8Fj86CZiJrscT4fwUAmacteqGq8RUdk=
-    lastmodified: "2025-08-22T01:52:44Z"
-    mac: ENC[AES256_GCM,data:Gd4xDbWV3dtz2PyTk+i/8Yg/1RZG7YCkjmsgeFiMKRiE7F7Fj7MOPV2CC5RdWo7Qdaikjf76r3bs0yAnUZwJ6zxvhZGExh9rXIwmtXxaQwOD/+3Xzz0nHpo8912OK+M5xToxdtyBVwMX5acxD7uN424oPnf2l/Ycu+8qXh8+zRI=,iv:hYx8XD/Q9SuOX477CBClp73GInEn+xAWDYoQnEKQoS8=,tag:21I2jYBTjvblpkaQ5tWcFw==,type:str]
+    lastmodified: "2025-11-16T16:52:02Z"
+    mac: ENC[AES256_GCM,data:6HtLs47vpChrRLLGDP3oirksGVqeqhtbzX48wtde0yGlO8CkiIdYTJYbiaaVwtoDJRk5iXjw4oBHfJ/bnYN3tdAqGY0OxU1mr2+vwfGQ7cqewZxcQFf7vLusJuI0/4y8P8itA8DakgpSD+TYjHJQ/zjXZXZAqkpTJhVLV8ch9Fg=,iv:l7IEsMHQmoSiucbNPxHcJCo24foCZmGjChZZnEj6jQs=,tag:AjhbIeejl8WzXJVjvl9D8A==,type:str]
     encrypted_regex: (^.*repoConfig$)
     version: 3.10.2

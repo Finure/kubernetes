@@ -32,8 +32,8 @@ spec:
     - name: determine-version
       image: alpine/semver:7.5.4
       env:
-      - name: HOME
-        value: "$(params.userHome)"
+        - name: HOME
+          value: "$(params.userHome)"
       workingDir: $(workspaces.shared-workspace.path)
       script: |
         #!/bin/sh
@@ -59,7 +59,7 @@ spec:
         else
             echo "Latest version: $LATEST_TAG"
             
-            MERGE_BASE=$(git merge-base "$LATEST_TAG" HEAD)
+            MERGE_BASE=$(git merge-base "$LATEST_TAG" HEAD || true)
 
             if [ -z "$MERGE_BASE" ]; then
                 echo "Warning: No common ancestor found"

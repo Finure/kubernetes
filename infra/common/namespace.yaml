@@ -94,3 +94,10 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: github-actions
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: flagger-system
+  labels:
+    istio-injection: enabled

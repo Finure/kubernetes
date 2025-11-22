@@ -227,3 +227,28 @@ spec:
   interval: 1h0m0s
   url: oci://ghcr.io/actions/actions-runner-controller-charts
   type: "oci"
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: flagger
+  namespace: flagger-system
+spec:
+  interval: 1h
+  url: oci://ghcr.io/fluxcd/charts/flagger
+  layerSelector:
+    mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
+    operation: copy
+  ref:
+    semver: "1.x"
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: flagger-loadtester
+  namespace: flagger-system
+spec:
+  interval: 5m
+  url: oci://ghcr.io/fluxcd/flagger-manifests
+  ref:
+    semver: "*" 

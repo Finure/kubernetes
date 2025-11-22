@@ -1,0 +1,22 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: flagger
+  namespace: flagger-system
+spec:
+  interval: 12h
+  releaseName: flagger
+  install: 
+    crds: CreateReplace
+  upgrade: 
+    crds: CreateReplace
+  chartRef:
+    kind: OCIRepository
+    name: flagger
+  values:
+    nodeSelector:
+      kubernetes.io/os: linux
+    meshProvider: istio
+    metricsServer: http://prometheus-operated.monitoring.svc.cluster.local:9090
+    crd:
+      create: false 

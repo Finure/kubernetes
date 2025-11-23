@@ -1,0 +1,138 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: request-limits
+spec:
+  rules:
+  - name: force-default-resources
+    match:
+      resources:
+        kinds:
+        - Pod
+        namespaces:
+        - ai
+    mutate:
+      foreach:
+      - list: "request.object.spec.containers"
+        patchStrategicMerge:
+          spec:
+            containers:
+            - name: "{{ element.name }}"
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "100m"
+                  memory: "256Mi"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: deny-privileged-pods
+spec:
+  validationFailureAction: Enforce
+  rules:
+  - name: deny-privileged
+    match:
+      resources:
+        kinds:
+        - Pod
+        - Deployment
+        - StatefulSet
+        - DaemonSet
+        - Job
+        - CronJob
+        namespaces:
+        - ai
+    validate:
+      message: "Privileged pods are not allowed in this namespace"
+      deny:
+        conditions:
+          any:
+          - key: "{{ request.object.spec.template.spec.containers[].securityContext.privileged || `false` }}"
+            operator: Equals
+            value: true
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-labels
+spec:
+  rules:
+  - name: add-label
+    match:
+      resources:
+        kinds:
+        - Deployment
+        - StatefulSet
+        - DaemonSet
+        - Job
+        - CronJob
+        - Pod
+        namespaces:
+        - ai
+    mutate:
+      patchStrategicMerge:
+        metadata:
+          labels:
+            team: "infra"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-resourcequota
+spec:
+  generateExisting: true
+  rules:
+  - name: default-quota
+    match:
+      resources:
+        kinds:
+        - Namespace
+        names:
+        - ai
+        - ai2
+    generate:
+      apiVersion: v1
+      kind: ResourceQuota
+      name: default-quota
+      namespace: "{{request.object.metadata.name}}"
+      synchronize: true
+      data:
+        spec:
+          hard:
+            limits.cpu: "8"
+            limits.memory: "32Gi"
+            requests.cpu: "4"
+            requests.memory: "16Gi"
+            pods: "50"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-limitrange
+spec:
+  generateExisting: true
+  rules:
+  - name: default-limitrange
+    match:
+      resources:
+        kinds:
+        - Namespace
+        names:
+        - ai
+        - ai2
+    generate:
+      apiVersion: v1
+      kind: LimitRange
+      name: default-limits
+      namespace: "{{request.object.metadata.name}}"
+      synchronize: true
+      data:
+        spec:
+          limits:
+          - type: Container
+            max:
+              cpu: "1000m"
+              memory: "1Gi"

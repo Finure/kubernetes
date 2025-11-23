@@ -40,7 +40,7 @@ The infrastructure includes the following components:
 15. **Kyverno:** Kubernetes-native policy engine to enforce security, compliance and operational policies
 16. **Metrics:** Prometheus for metrics and Grafana for visualization
 17. **Logging:** Fluentbit as lightweight log forwarder, Loki with GCS as the backend and Grafana for query 
-18. **Observability:** Beyla for auto instrumentation of app metrics and traces using eBPF, OpenTelemetry Collector for central pipeline and Signoz as the backend
+18. **Observability:** Beyla for auto instrumentation of app metrics and traces using eBPF, OpenTelemetry Collector for central pipeline and SigNoz as the backend for visualization and analysis of metrics and traces
 19. **PostgreSQL:** Cloudnative PostgreSQL operator and PostgreSQL cluster for Finure infra apps such as SonarQube & Finure apps
 20. **Reflector:** Replicates Kubernetes secrets across namespaces for easier management
 21. **SonarQube:** Code quality and security analysis tool for continuous inspection of code
@@ -52,8 +52,29 @@ The infrastructure includes the following components:
 27. **Opencost:** Cost monitoring and optimization tool for Kubernetes clusters 
 28. **GitHub Actions:** Self-hosted GitHub Actions runners to run GitHub workflows (more planned)
 29. **Kubernetes Gateway API with Istio:** Manage ingress traffic for Finure applications using Kubernetes Gateway API with Istio controller
-30. **Flagger with Istio:** Progressive delivery for Finure apps supporting canary and blue/green (A/B) deployments with traffic mirroring
-31. **Chaos Mesh:** Chaos engineering tool to test Finure app resilience by injecting faults and simulating failures in the cluster
+30. **Flagger with Istio:** Blue/Green progressive delivery for Finure app updates with automated rollouts using smoke and load tests along with rollbacks
+31. **Chaos Mesh:** Chaos experiments for testing resilience of Finure microservices under various failure scenarios (pod failures, network latency, resource constraints, fault injection etc)
+
+## Progressive Delivery
+- **Flagger with Istio**: Blue/Green progressive delivery for Finure app updates with automated rollouts using smoke and load tests along with rollbacks
+
+### Core Components
+- **Flagger**: Progressive delivery controller that orchestrates Blue/Green deployments
+- **Istio**: Service mesh providing traffic management via VirtualServices and DestinationRules
+- **Prometheus**: Metrics collection from Envoy sidecars for analysis (request rates, errors, latency)
+- **Load Tester**: Webhook service for executing smoke and load tests during rollouts
+- **Flux**: GitOps automation triggering Flagger when app versions are updated
+
+### High-Level Flow
+1. **Tekton CD** pipeline updates app Helm chart version in Git after successful build/push
+2. **Flux** detects Git change, applies updated Canary resource to cluster
+3. **Flagger** creates Istio VirtualService/DestinationRule for traffic splitting
+4. **Smoke tests** execute via load-tester webhook to validate canary health
+5. **Flagger** scales up canary deployment to match stable replicas for load testing
+6. **Load tests** run against canary, Prometheus scrapes Envoy metrics (success rate, latency)
+7. **Flagger analyzes** metrics; if thresholds pass, switches 100% traffic to canary (Blue/Green), **rollback** if violated
+8. On success: 100% traffic to canary, deployment promoted to stable
+9. On failure: traffic reverts to stable, canary removed, manual intervention required
 
 ## Tekton Pipeline
 
@@ -139,6 +160,26 @@ End-to-end ML workflow from data ingestion to model training to deployment
 4. **Model Deployment**: KServe monitors GCS for new models, automatically deploys them as serverless inference services on Knative, scales to zero when not in use to save resources
 5. **Prediction**: Finure app backend consumes credit card application data from Kafka, sends it to KServe for real-time predictions using the deployed model and stores results in PostgreSQL
 6. **Monitoring & Alerts**: Prometheus, Grafana and Jaeger monitor the entire ML pipeline, set up alerts for failures or performance issues
+
+## Observability
+
+The observability stack provides comprehensive monitoring across three pillars:
+
+### Metrics
+- **Prometheus**: Collects and stores time-series metrics from all cluster components and applications
+- **Grafana**: Visualizes infra and application metrics with customizable dashboards and alerting
+- **Kiali**: Visualizes Istio service mesh metrics and traffic flow
+- **Opencost**: Monitors and optimizes Kubernetes cluster costs
+
+### Logs
+- **Fluentbit**: Lightweight log forwarder deployed as DaemonSet, collects logs from all pods and forwards to Loki
+- **Loki**: Log aggregation system with GCS backend for long-term storage
+- **Grafana**: Unified interface for querying and exploring logs via LogQL
+
+### Application Observability
+- **Beyla**: eBPF-based auto-instrumentation for application metrics and distributed traces without code changes
+- **OpenTelemetry Collector**: Central telemetry pipeline for receiving, processing and exporting metrics and traces
+- **SigNoz**: Full-stack observability backend for visualization and analysis of application metrics, traces and service maps
 
 ## Github Actions
 The repository includes GitHub Actions workflows to automate the following tasks:

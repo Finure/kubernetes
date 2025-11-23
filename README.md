@@ -51,6 +51,8 @@ The infrastructure includes the following components:
 26. **KEDA**: Kubernetes Event-Driven Autoscaling to scale Finure app-backend consumers based on Kafka lag
 27. **Opencost:** Cost monitoring and optimization tool for Kubernetes clusters 
 28. **GitHub Actions:**: Self-hosted GitHub Actions runners to run GitHub workflows (more planned)
+29. **Kubernetes Gateway API with Istio:**: Manage ingress traffic for Finure applications using Kubernetes Gateway API with Istio controller
+30. **Flagger with Istio:**: Progressive delivery for Finure apps supporting canary and blue/green (A/B) deployments with traffic mirroring
 
 ## Tekton Pipeline
 
@@ -91,6 +93,7 @@ End-to-end CI/CD for Finure repos using Tekton
 - Image scan with **Trivy**
 - Update Finure apps repo `k8s` folder Helm chart/app version to trigger Flux deployments
 - Create a release in GitHub
+- Blue/Green (A/B) progressive delivery using Flagger with Istio, with smoke and load tests (manifest in apps repos)
 - Notify Slack + GitHub of success/failure  
 
 ### Secrets & Workspaces

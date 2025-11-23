@@ -1,0 +1,86 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: app-frontend-random-pod-kill
+  namespace: ai
+spec:
+  schedule: "@every 25h37m29s"
+  historyLimit: 3
+  type: PodChaos
+  podChaos:
+    action: pod-kill
+    mode: random-max-percent
+    value: "30"
+    selector:
+      labelSelectors:
+        'app.kubernetes.io/instance': 'app-frontend'
+    duration: "60s"
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: app-frontend-cpu-stress
+  namespace: ai
+spec:
+  schedule: "@every 39h17m41s"
+  historyLimit: 3
+  type: StressChaos
+  stressChaos:
+    mode: random-max-percent
+    value: "30"
+    selector:
+      namespaces:
+        - ai
+      labelSelectors:
+        'app.kubernetes.io/instance': 'app-frontend'
+    stressors:
+      cpu:
+        workers: 2
+        load: 100
+    duration: "300s"
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: app-frontend-delay
+  namespace: ai
+spec:
+  schedule: "@every 32h11m55s"
+  historyLimit: 3
+  type: HTTPChaos
+  httpChaos:
+    mode: random-max-percent
+    value: "30"
+    selector:
+      namespaces:
+        - ai
+      labelSelectors:
+        'app.kubernetes.io/instance': 'app-frontend'
+    target: Request
+    port: 3000
+    path: "*"
+    delay: "5s"
+    duration: "1m"
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: app-frontend-abort
+  namespace: ai
+spec:
+  schedule: "@every 32h11m55s"
+  historyLimit: 3
+  type: HTTPChaos
+  httpChaos:
+    mode: random-max-percent
+    value: "30"
+    selector:
+      namespaces:
+        - ai
+      labelSelectors:
+        'app.kubernetes.io/instance': 'app-frontend'
+    target: Request
+    port: 3000
+    path: "*"
+    abort: true
+    duration: "60s"

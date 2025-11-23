@@ -53,6 +53,7 @@ The infrastructure includes the following components:
 28. **GitHub Actions:** Self-hosted GitHub Actions runners to run GitHub workflows (more planned)
 29. **Kubernetes Gateway API with Istio:** Manage ingress traffic for Finure applications using Kubernetes Gateway API with Istio controller
 30. **Flagger with Istio:** Progressive delivery for Finure apps supporting canary and blue/green (A/B) deployments with traffic mirroring
+31. **Chaos Mesh:** Chaos engineering tool to test Finure app resilience by injecting faults and simulating failures in the cluster
 
 ## Tekton Pipeline
 

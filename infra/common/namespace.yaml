@@ -39,6 +39,8 @@ metadata:
   name: ai
   labels:
     istio-injection: enabled
+  annotations:
+    chaos-mesh.org/inject: enabled
 ---
 apiVersion: v1
 kind: Namespace
@@ -101,3 +103,8 @@ metadata:
   name: flagger-system
   labels:
     istio-injection: enabled
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: chaos-mesh

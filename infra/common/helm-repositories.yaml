@@ -252,3 +252,12 @@ spec:
   url: oci://ghcr.io/fluxcd/flagger-manifests
   ref:
     semver: "*" 
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: chaos-mesh
+  namespace: chaos-mesh
+spec:
+  interval: 1h0m0s
+  url: https://charts.chaos-mesh.org

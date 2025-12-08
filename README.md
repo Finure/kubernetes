@@ -54,6 +54,7 @@ The infrastructure includes the following components:
 29. **Kubernetes Gateway API with Istio:** Manage ingress traffic for Finure applications using Kubernetes Gateway API with Istio controller
 30. **Flagger with Istio:** Blue/Green progressive delivery for Finure app updates with automated rollouts using smoke and load tests along with rollbacks
 31. **Chaos Mesh:** Chaos experiments for testing resilience of Finure microservices under various failure scenarios (pod failures, network latency, resource constraints, fault injection etc)
+32. **Terraform Drift Detection:** Automated drift detection and alerting for Finure Terraform infrastructure repos using custom Terraform Drift Detection tool (https://github.com/Finure/terraform-drift) designed to work with Atlantis and different terraform versions as required
 
 ## Progressive Delivery
 - **Flagger with Istio**: Blue/Green progressive delivery for Finure app updates with automated rollouts using smoke and load tests along with rollbacks
